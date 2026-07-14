@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     elevenlabs_api_key: str | None = None
     kling_api_key: str | None = None
 
+    tavily_api_key: str | None = None
+
     youtube_client_id: str | None = None
     youtube_client_secret: str | None = None
     youtube_refresh_token: str | None = None

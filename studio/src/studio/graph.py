@@ -7,6 +7,8 @@ Review's human-approval wait — are Week 1 Days 3 and 6 work, not Day 1;
 wiring them onto a graph that doesn't compile yet would be premature.
 """
 
+from typing import Protocol
+
 from langgraph.graph import END, START, StateGraph
 
 from studio.agents import (
@@ -26,8 +28,13 @@ from studio.agents import (
 )
 from studio.state import PipelineState
 
+
+class Agent(Protocol):
+    def run(self, state: PipelineState) -> PipelineState: ...
+
+
 # Order matches the pipeline diagram in blueprint.md Section 4.
-NODES: list[tuple[str, object]] = [
+NODES: list[tuple[str, Agent]] = [
     ("case_sourcing", case_sourcing),
     ("deep_research", deep_research),
     ("fact_checker", fact_checker),
