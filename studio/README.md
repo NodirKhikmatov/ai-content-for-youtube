@@ -1,7 +1,9 @@
 # studio — "The Turning Point"
 
 Phase 1 MVP pipeline. Full context: [`../blueprint.md`](../blueprint.md) (or the
-published artifact) — this scaffold implements Section 8 of that doc.
+published artifact) — this scaffold implements Section 8 of that doc. See
+[`WEEK1_RETRO.md`](WEEK1_RETRO.md) for what actually broke building it and
+what Week 2 should do first.
 
 ## Status
 
@@ -80,8 +82,25 @@ Following `blueprint.md` Section 8's day-by-day build order:
   the same shape of problem Temporal was scoped to solve (blueprint.md
   roadmap, Phase 2+) — not built here.
 
-Publishing is still Day 7 work — see `blueprint.md` Section 8's build-order
-table.
+- **Day 7** — Publishing is real, scoped exactly as blueprint.md Section 8
+  specifies: it does **not** call the YouTube Data API. It prepares a
+  manual-publish checklist (video path, captions, a suggested title/
+  description drawn from the research brief) and leaves the video ready
+  for a human to upload through YouTube Studio. `scripts/mark_published.py`
+  is the honest counterpart — a separate, deliberately manual step that
+  records the actual publish only after a human confirms it happened;
+  verified by actually running it against a real seeded video, not just
+  unit-tested.
+
+  **The plan's literal Day 7 task — "publish video #1" — could not
+  literally happen**: no live API key has been configured for anything
+  this week, so no real video has ever been produced end to end. See
+  [`WEEK1_RETRO.md`](WEEK1_RETRO.md) for the full accounting of what broke,
+  what's still unverified, and what Week 2 should do first (spoiler: get
+  one real API key before anything else).
+
+All 13 Phase 1 agents now have real logic. Phase 2 is next — see
+`blueprint.md` Section 7's roadmap.
 
 ## Setup
 
@@ -98,10 +117,10 @@ docker compose up -d   # local Postgres (pgvector-enabled) on localhost:5434,
 python scripts/init_db.py
 python scripts/seed_cases.py
 
-pytest                 # 57 tests. Real: Case Sourcing (DB), all of
-                        # test_ffmpeg_utils.py and most of Video Assembly/
-                        # Subtitle (synthetic media via ffmpeg, no API keys
-                        # needed for those), and Quality Review's actual
+pytest                 # 59 tests. Real: Case Sourcing and Publishing (DB),
+                        # all of test_ffmpeg_utils.py and most of Video
+                        # Assembly/Subtitle (synthetic media via ffmpeg, no
+                        # API keys needed), and Quality Review's actual
                         # interrupt/resume cycle (real LangGraph checkpointer,
                         # only the Gemini call is mocked). Mocked LLM/search/
                         # embeddings/ElevenLabs/Kling/Deepgram elsewhere.
@@ -124,14 +143,14 @@ src/studio/
                transcription, Gemini video review, shared ffmpeg helpers)
   agents/      one file per Phase 1 agent — see blueprint.md Section 4 for
                each agent's full spec (inputs/outputs/decision logic/failure
-               handling). Everything through Compliance has real logic now;
-               only Publishing is still a stub.
+               handling). All 13 have real logic as of Day 7.
 db/schema.sql  channels, cases, videos, agent_runs, decisions, angle_embeddings
 scripts/
-  init_db.py     applies schema.sql + seeds the one Phase 1 channel
-  seed_cases.py  seeds the 30-case backlog with its scoring rubric
-  run_pipeline.py runs a full video end to end, handling Quality Review's
-                 human-in-the-loop interrupt interactively
+  init_db.py       applies schema.sql + seeds the one Phase 1 channel
+  seed_cases.py    seeds the 30-case backlog with its scoring rubric
+  run_pipeline.py  runs a full video end to end, handling Quality Review's
+                   human-in-the-loop interrupt interactively
+  mark_published.py records an actual manual YouTube upload after the fact
 tests/
   test_graph.py           structural: compiles, all nodes present, all routing
   test_case_sourcing.py   real (hits the dev DB, no external API)
@@ -148,6 +167,7 @@ tests/
   test_subtitle.py        mocked Deepgram; real ffmpeg for extract/burn-in
   test_quality_review.py  real interrupt/resume cycle; Gemini call mocked
   test_compliance.py      mocked LLM; verifies decisions table rows
+  test_publishing.py      real (DB only, no external API)
 ```
 
 ## Manual steps not automated here
@@ -177,10 +197,10 @@ scaffold can do on its own:
   `R2_*` in `.env`. Optional in practice as of Day 5 — every media agent
   works entirely off local disk and just skips the upload (with a logged
   warning) when R2 isn't configured.
-- **YouTube Data API**: create a project + OAuth client in Google Cloud
-  Console, fill `YOUTUBE_CLIENT_ID`/`YOUTUBE_CLIENT_SECRET`. The OAuth
-  consent flow that produces `YOUTUBE_REFRESH_TOKEN` is Day 7 work
-  (publishing stays manual — YouTube Studio — until then, per the blueprint).
+- **YouTube**: no API credentials needed for Phase 1 — Publishing
+  deliberately stays manual (YouTube Studio) per blueprint.md Section 8.
+  `YOUTUBE_CLIENT_ID`/`YOUTUBE_CLIENT_SECRET`/the OAuth consent flow are
+  Phase 2 work, whenever the write path actually gets automated.
 
 ## Deliberately not here yet
 
