@@ -30,9 +30,35 @@ Following `blueprint.md` Section 8's day-by-day build order:
   math lives in `pacing.py` so the two agents can't drift onto different
   assumptions about narration speed.
 
-Voice Synthesis, Video Generation, Video Assembly, Subtitle, Quality Review,
-Compliance, and Publishing are still Day 5–7 work — see `blueprint.md`
-Section 8's build-order table.
+- **Day 5** — Voice Synthesis (ElevenLabs), Video Generation (Kling, one
+  clip per beat), Video Assembly, and Subtitle are all real. Local disk
+  (`media/{video_id}/`) is the canonical working store for the whole run —
+  every ffmpeg step needs local files regardless, and there's no live R2
+  credential to test an upload-as-gate design against — so R2 upload is
+  best-effort persistence that degrades gracefully, not a blocking step.
+  Video Assembly enforces its pacing rule for real (loop or trim the
+  concatenated clips to match the narration's exact duration, verified with
+  real ffmpeg against synthetic media, not mocked). Subtitle forced-aligns
+  against the *assembled* video's actual audio (not the pre-mux narration
+  file), computes word-error-rate, and only burns captions in when WER is
+  low enough — otherwise it flags `needs_manual_correction` and leaves the
+  un-captioned cut in place rather than publish-ready but wrong captions.
+
+  **Known Phase 1 limitation, not fixed today:** one 5-second Kling clip per
+  beat (6 total) gets looped to fill an 8-15 minute narration, which means
+  long stretches of repeated visuals rather than frequent cuts — the "no
+  dead air" half of Section 4.4's pacing rule is enforced (visuals always
+  cover the full narration), but the "cut frequency" half isn't yet. Needs
+  either more clips generated per beat or an explicit cut-scheduling step;
+  flagged here rather than silently shipped as if it were solved.
+
+  **Also surfaced today:** plain `brew install ffmpeg` has no libass, so the
+  `subtitles` burn-in filter doesn't exist in it at all — needs
+  `ffmpeg-full` (keg-only) pointed at via `FFMPEG_BINARY`/`FFPROBE_BINARY`.
+  See "Manual steps" below.
+
+Quality Review, Compliance, and Publishing are still Day 6–7 work — see
+`blueprint.md` Section 8's build-order table.
 
 ## Setup
 
@@ -49,10 +75,12 @@ docker compose up -d   # local Postgres (pgvector-enabled) on localhost:5434,
 python scripts/init_db.py
 python scripts/seed_cases.py
 
-pytest                 # 22 tests: structural + Case Sourcing (real, hits the
-                        # dev DB) + Deep Research/Fact Checker/Originality/
-                        # Storytelling/Script Writer (mocked LLM/search/
-                        # embeddings — no live keys needed) + pacing (pure)
+pytest                 # 44 tests. Real: Case Sourcing (DB), all of
+                        # test_ffmpeg_utils.py and most of Video Assembly/
+                        # Subtitle (synthetic media via ffmpeg, no API keys
+                        # needed for those). Mocked LLM/search/embeddings/
+                        # ElevenLabs/Kling/Deepgram elsewhere. pacing.py and
+                        # word_error_rate/words_to_srt are pure, no mocking.
 ```
 
 ## Layout
@@ -67,25 +95,30 @@ src/studio/
   graph.py     builds the LangGraph pipeline; owns the fact-checker
                hard-stop conditional edge
   tools/       external-API clients shared across agents (Tavily search,
-               Voyage embeddings)
+               Voyage embeddings, ElevenLabs voice, Kling video, Deepgram
+               transcription, shared ffmpeg subprocess helpers)
   agents/      one file per Phase 1 agent — see blueprint.md Section 4 for
                each agent's full spec (inputs/outputs/decision logic/failure
-               handling). case_sourcing, deep_research, fact_checker,
-               originality, storytelling, and script_writer have real
-               logic; the rest are still stubs.
+               handling). Everything through Subtitle has real logic now;
+               Quality Review, Compliance, and Publishing are still stubs.
 db/schema.sql  channels, cases, videos, agent_runs, decisions, angle_embeddings
 scripts/
   init_db.py     applies schema.sql + seeds the one Phase 1 channel
   seed_cases.py  seeds the 30-case backlog with its scoring rubric
 tests/
-  test_graph.py          structural: compiles, all nodes present, routing
-  test_case_sourcing.py  real (hits the dev DB, no external API)
-  test_deep_research.py  mocked LLM + search
-  test_fact_checker.py   mocked LLM + search; covers pass and hard-stop
-  test_originality.py    mocked embeddings; covers pass, flag, and failure
-  test_storytelling.py   mocked LLM; covers pass, hook retry, missing beat
-  test_script_writer.py  mocked LLM; covers pass, pacing retry, missing input
-  test_pacing.py         pure unit tests, no mocking
+  test_graph.py           structural: compiles, all nodes present, routing
+  test_case_sourcing.py   real (hits the dev DB, no external API)
+  test_deep_research.py   mocked LLM + search
+  test_fact_checker.py    mocked LLM + search; covers pass and hard-stop
+  test_originality.py     mocked embeddings; covers pass, flag, and failure
+  test_storytelling.py    mocked LLM; covers pass, hook retry, missing beat
+  test_script_writer.py   mocked LLM; covers pass, pacing retry, missing input
+  test_pacing.py          pure unit tests, no mocking
+  test_ffmpeg_utils.py    real ffmpeg against synthetic media, no mocking
+  test_voice_synthesis.py mocked ElevenLabs
+  test_video_generation.py mocked Kling
+  test_video_assembly.py  real ffmpeg against synthetic media; R2 mocked
+  test_subtitle.py        mocked Deepgram; real ffmpeg for extract/burn-in
 ```
 
 ## Manual steps not automated here
@@ -98,14 +131,25 @@ scaffold can do on its own:
 - **Voyage AI** (`VOYAGE_API_KEY`): Originality & Angle's embeddings. Verify
   the `voyage-3` model choice in `tools/embeddings.py` is still current —
   it's a Jan-2026-training-cutoff default, not a live lookup.
+- **ElevenLabs** (`ELEVENLABS_API_KEY`): Voice Synthesis.
+- **Kling** (`KLING_API_KEY`): Video Generation. `tools/video_gen.py`'s
+  endpoint/auth shape is a best-effort default, not verified against a live
+  account — check Kling's current API docs before trusting it.
+- **Deepgram** (`DEEPGRAM_API_KEY`): Subtitle's forced transcription.
+- **ffmpeg-full** (not the plain `ffmpeg` formula): `brew install
+  ffmpeg-full`, then set `FFMPEG_BINARY`/`FFPROBE_BINARY` in `.env` to its
+  keg path (default in `.env.example` assumes Homebrew on Apple Silicon —
+  adjust for your machine). Plain `ffmpeg` has no libass, so caption
+  burn-in silently has no filter to call.
 - **Cloudflare R2**: create the bucket + API token in the dashboard, fill
-  `R2_*` in `.env`.
+  `R2_*` in `.env`. Optional in practice as of Day 5 — every media agent
+  works entirely off local disk and just skips the upload (with a logged
+  warning) when R2 isn't configured.
 - **YouTube Data API**: create a project + OAuth client in Google Cloud
   Console, fill `YOUTUBE_CLIENT_ID`/`YOUTUBE_CLIENT_SECRET`. The OAuth
   consent flow that produces `YOUTUBE_REFRESH_TOKEN` is Day 7 work
   (publishing stays manual — YouTube Studio — until then, per the blueprint).
-- **Gemini / OpenAI / ElevenLabs / Kling**: API keys from each vendor's own
-  dashboard, needed starting Day 4–5.
+- **Anthropic, Tavily, Voyage, Gemini, OpenAI**: as described above.
 
 ## Deliberately not here yet
 

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     elevenlabs_api_key: str | None = None
     kling_api_key: str | None = None
+    deepgram_api_key: str | None = None
 
     tavily_api_key: str | None = None
     voyage_api_key: str | None = None
@@ -29,6 +30,13 @@ class Settings(BaseSettings):
     r2_access_key_id: str | None = None
     r2_secret_access_key: str | None = None
     r2_bucket_name: str = "turning-point-media"
+
+    # Plain Homebrew `ffmpeg` has no libass support, so the `subtitles`
+    # filter (caption burn-in) doesn't exist in it at all — needs
+    # `brew install ffmpeg-full` (keg-only) and these pointed at it, e.g.
+    # /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg. See README.md.
+    ffmpeg_binary: str = "ffmpeg"
+    ffprobe_binary: str = "ffprobe"
 
 
 settings = Settings()
