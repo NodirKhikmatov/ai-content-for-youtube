@@ -227,3 +227,28 @@ def record_agent_run(
         ).fetchone()
     assert row is not None, "INSERT ... RETURNING always yields a row on success"
     return row["id"]
+
+
+def record_decision(
+    video_id: Id,
+    agent_name: str,
+    decision: str,
+    rationale: str,
+    confidence: float | None = None,
+) -> UUID:
+    """The editorial/compliance audit trail (blueprint.md Section 4.5,
+    4.6): evidence of a real decision process, not just "the model said it
+    was fine". First actually written to on Day 6 (Quality Review,
+    Compliance) — the table has existed since Day 1's schema but nothing
+    used it until there was a real editorial decision to record."""
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            insert into decisions (video_id, agent_name, decision, rationale, confidence)
+            values (%s, %s, %s, %s, %s)
+            returning id
+            """,
+            (video_id, agent_name, decision, rationale, confidence),
+        ).fetchone()
+    assert row is not None, "INSERT ... RETURNING always yields a row on success"
+    return row["id"]

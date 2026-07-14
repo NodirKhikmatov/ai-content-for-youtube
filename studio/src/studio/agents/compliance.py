@@ -1,26 +1,123 @@
-"""Policy / Monetization Compliance agent — stub. See blueprint.md
-Section 4.5 and Section 8 (Copyright/Content-ID folded in here for Phase 1).
+"""Policy / Monetization Compliance agent. See blueprint.md Section 4.5,
+and Section 8 (Copyright/Content-ID risk folded in here for Phase 1 rather
+than deferred to Phase 3, since real names/mugshots/archival footage are
+the core asset type in this niche).
 
-The prompt this eventually runs is built from YouTube's own inauthentic /
-reused / low-value / limited-ads policy language as a structured rubric,
-plus a real-person-likeness and archival-footage licensing checklist —
-both are load-bearing for this specific niche (Section 8: "real names,
-mugshots, and archival news footage are the core asset type").
+The rubric below is built from YouTube's own inauthentic / reused /
+low-value / limited-ads policy language (blueprint.md Section 1.1), not a
+vibe check. Every category verdict is written to the `decisions` table —
+the audit trail the schema has carried since Day 1 that Quality Review
+started using earlier in this same Day 6 pass.
 
-Every verdict this agent produces should be written to the `decisions`
-table (see db/schema.sql) — that log is the audit trail if a channel is
-ever flagged or appealed.
-
-Day 1: wired into the graph, passes state through unchanged.
+Decision logic: `approved_for_publish` is recomputed from the category
+verdicts server-side (any "high" risk category blocks) rather than trusted
+directly off whatever the model self-reports — the same pattern Fact
+Checker used for hard_stop on Day 3. A rejection is a real graph-level
+conditional edge (Compliance -> END), not just a returned flag.
 """
 
 import logging
+from typing import Literal, cast
 
+from langchain_anthropic import ChatAnthropic
+from pydantic import BaseModel
+
+from studio import db
+from studio.config import settings
 from studio.state import PipelineState
 
 log = logging.getLogger(__name__)
 
+MODEL = "claude-opus-4-8"
+
+PolicyCategory = Literal[
+    "inauthentic_content", "reused_content", "low_value_content", "limited_ads"
+]
+
+
+class PolicyCategoryVerdict(BaseModel):
+    category: PolicyCategory
+    risk: Literal["low", "medium", "high"]
+    rationale: str
+
+
+class ComplianceResult(BaseModel):
+    verdicts: list[PolicyCategoryVerdict]
+    requires_synthetic_disclosure: bool
+    summary: str
+
+
+POLICY_RUBRIC = (
+    "Assess this video against YouTube's 2026 monetization policy "
+    "categories, each rated low/medium/high risk:\n\n"
+    "- inauthentic_content: is this mass-produced/templated, interchangeable "
+    "with other videos, or made with minimal human editorial input?\n"
+    "- reused_content: is this a low-effort repost/compilation with no "
+    "added commentary or creative transformation?\n"
+    "- low_value_content: does it just read off a source with no narrative "
+    "or educational value, or use unedited/low-effort footage?\n"
+    "- limited_ads: does it depict a real person without clear "
+    "documentary/commentary framing, make any medical/financial/legal "
+    "advice claims, or risk misleading viewers about a current event?\n\n"
+    "Also state whether the 'Altered or synthetic content' disclosure "
+    "should be toggled on — required when AI-generated visuals could be "
+    "mistaken for real footage of real events.\n\n"
+    "Script:\n{script}\n\n"
+    "Case: {title} ({jurisdiction}, {era}) — closed case, verdict already "
+    "public record."
+)
+
 
 def run(state: PipelineState) -> PipelineState:
-    log.info("compliance: stub — passing state through unchanged")
+    if not settings.anthropic_api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY missing — see .env.example.")
+
+    video_id = state["video_id"]
+    case = db.get_case(state["case_id"])
+    script = state.get("script", "")
+
+    try:
+        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key, temperature=0)  # type: ignore[call-arg,arg-type]
+        structured_llm = llm.with_structured_output(ComplianceResult)
+        prompt = POLICY_RUBRIC.format(
+            script=script,
+            title=case["title"],
+            jurisdiction=case["jurisdiction"],
+            era=case["era"],
+        )
+        result = cast(ComplianceResult, structured_llm.invoke(prompt))
+    except Exception as exc:
+        db.record_agent_run(video_id, "compliance", "failed", error=str(exc))
+        raise
+
+    high_risk = [v for v in result.verdicts if v.risk == "high"]
+    approved = not high_risk
+
+    for v in result.verdicts:
+        db.record_decision(
+            video_id,
+            "compliance",
+            decision=f"{v.category}:{v.risk}",
+            rationale=v.rationale,
+        )
+
+    output = {
+        "verdicts": [v.model_dump() for v in result.verdicts],
+        "requires_synthetic_disclosure": result.requires_synthetic_disclosure,
+        "approved_for_publish": approved,
+        "summary": result.summary,
+    }
+
+    db.update_video(video_id, status="approved" if approved else "rejected")
+    db.record_agent_run(
+        video_id,
+        "compliance",
+        "succeeded",
+        input={"case_id": state["case_id"]},
+        output=output,
+    )
+
+    log.info("compliance: approved=%s (%d high-risk categories)", approved, len(high_risk))
+
+    state["compliance_verdict"] = output
     return state

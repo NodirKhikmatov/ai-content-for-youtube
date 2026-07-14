@@ -14,7 +14,13 @@ Day 6-7 exercise rather than a `pytest` assertion.
 
 from langgraph.graph import END
 
-from studio.graph import NODES, _route_after_fact_check, compiled
+from studio.graph import (
+    NODES,
+    _route_after_compliance,
+    _route_after_fact_check,
+    _route_after_quality_review,
+    compiled,
+)
 
 
 def test_graph_compiles():
@@ -35,6 +41,37 @@ def test_routes_to_originality_when_fact_check_missing():
     # defensive default: no fact_check in state should never be treated as
     # a silent pass-through hard stop
     assert _route_after_fact_check({}) == "originality"
+
+
+def test_routes_to_compliance_on_auto_approve():
+    assert _route_after_quality_review({"quality_verdict": {"decision": "auto_approved"}}) == "compliance"
+
+
+def test_routes_to_compliance_on_human_approve():
+    assert _route_after_quality_review({"quality_verdict": {"decision": "approve"}}) == "compliance"
+
+
+def test_routes_to_end_on_quality_review_rejection():
+    assert _route_after_quality_review({"quality_verdict": {"decision": "reject"}}) == END
+
+
+def test_routes_to_end_when_quality_verdict_missing():
+    # defensive default: absence of a verdict must never be treated as approval
+    assert _route_after_quality_review({}) == END
+
+
+def test_routes_to_publishing_on_compliance_approval():
+    verdict = {"compliance_verdict": {"approved_for_publish": True}}
+    assert _route_after_compliance(verdict) == "publishing"
+
+
+def test_routes_to_end_on_compliance_rejection():
+    verdict = {"compliance_verdict": {"approved_for_publish": False}}
+    assert _route_after_compliance(verdict) == END
+
+
+def test_routes_to_end_when_compliance_verdict_missing():
+    assert _route_after_compliance({}) == END
 
 
 def test_all_phase1_nodes_present():

@@ -57,8 +57,31 @@ Following `blueprint.md` Section 8's day-by-day build order:
   `ffmpeg-full` (keg-only) pointed at via `FFMPEG_BINARY`/`FFPROBE_BINARY`.
   See "Manual steps" below.
 
-Quality Review, Compliance, and Publishing are still Day 6–7 work — see
-`blueprint.md` Section 8's build-order table.
+- **Day 6** — Quality Review and Compliance are real, and both are now
+  actual graph-level gates (Quality Review → END on rejection, Compliance →
+  END on rejection), matching Fact Checker's Day 3 hard-stop precedent
+  rather than returning flags nobody routes on. Quality Review's human gate
+  is a genuine LangGraph `interrupt()`: the auto-pass threshold is
+  deliberately strict (avg ≥ 0.95, every dimension ≥ 0.85), and anything
+  below it actually pauses the graph and waits for a real decision, resumed
+  via `scripts/run_pipeline.py`'s `Command(resume=...)` — tested against
+  the real interrupt/resume cycle (with the Gemini call mocked), not just
+  the agent function called directly. Compliance's rubric is built from
+  YouTube's own inauthentic/reused/low-value/limited-ads policy language
+  (blueprint.md Section 1.1) and is the first agent to actually write to
+  the `decisions` audit-trail table the schema has carried since Day 1.
+
+  **Known Phase 1 limitation:** the human-in-the-loop checkpointer
+  (`InMemorySaver`) only survives within one process — a paused run can't
+  be resumed by a separate later process invocation. That's why
+  `run_pipeline.py` both starts a run and handles its own interrupt/resume
+  in one continuous execution rather than being a "resume anytime" CLI. A
+  durable checkpointer is the natural fix, and not a coincidence that it's
+  the same shape of problem Temporal was scoped to solve (blueprint.md
+  roadmap, Phase 2+) — not built here.
+
+Publishing is still Day 7 work — see `blueprint.md` Section 8's build-order
+table.
 
 ## Setup
 
@@ -75,12 +98,14 @@ docker compose up -d   # local Postgres (pgvector-enabled) on localhost:5434,
 python scripts/init_db.py
 python scripts/seed_cases.py
 
-pytest                 # 44 tests. Real: Case Sourcing (DB), all of
+pytest                 # 57 tests. Real: Case Sourcing (DB), all of
                         # test_ffmpeg_utils.py and most of Video Assembly/
                         # Subtitle (synthetic media via ffmpeg, no API keys
-                        # needed for those). Mocked LLM/search/embeddings/
-                        # ElevenLabs/Kling/Deepgram elsewhere. pacing.py and
-                        # word_error_rate/words_to_srt are pure, no mocking.
+                        # needed for those), and Quality Review's actual
+                        # interrupt/resume cycle (real LangGraph checkpointer,
+                        # only the Gemini call is mocked). Mocked LLM/search/
+                        # embeddings/ElevenLabs/Kling/Deepgram elsewhere.
+                        # pacing.py and word_error_rate/words_to_srt are pure.
 ```
 
 ## Layout
@@ -92,21 +117,23 @@ src/studio/
   db.py        Postgres connection helper + all queries (incl. pgvector)
   storage.py   Cloudflare R2 client (needs a bucket created by hand first)
   pacing.py    shared word-count <-> narration-seconds math
-  graph.py     builds the LangGraph pipeline; owns the fact-checker
-               hard-stop conditional edge
+  graph.py     builds the LangGraph pipeline; owns all three hard-stop
+               conditional edges and the InMemorySaver checkpointer
   tools/       external-API clients shared across agents (Tavily search,
                Voyage embeddings, ElevenLabs voice, Kling video, Deepgram
-               transcription, shared ffmpeg subprocess helpers)
+               transcription, Gemini video review, shared ffmpeg helpers)
   agents/      one file per Phase 1 agent — see blueprint.md Section 4 for
                each agent's full spec (inputs/outputs/decision logic/failure
-               handling). Everything through Subtitle has real logic now;
-               Quality Review, Compliance, and Publishing are still stubs.
+               handling). Everything through Compliance has real logic now;
+               only Publishing is still a stub.
 db/schema.sql  channels, cases, videos, agent_runs, decisions, angle_embeddings
 scripts/
   init_db.py     applies schema.sql + seeds the one Phase 1 channel
   seed_cases.py  seeds the 30-case backlog with its scoring rubric
+  run_pipeline.py runs a full video end to end, handling Quality Review's
+                 human-in-the-loop interrupt interactively
 tests/
-  test_graph.py           structural: compiles, all nodes present, routing
+  test_graph.py           structural: compiles, all nodes present, all routing
   test_case_sourcing.py   real (hits the dev DB, no external API)
   test_deep_research.py   mocked LLM + search
   test_fact_checker.py    mocked LLM + search; covers pass and hard-stop
@@ -119,6 +146,8 @@ tests/
   test_video_generation.py mocked Kling
   test_video_assembly.py  real ffmpeg against synthetic media; R2 mocked
   test_subtitle.py        mocked Deepgram; real ffmpeg for extract/burn-in
+  test_quality_review.py  real interrupt/resume cycle; Gemini call mocked
+  test_compliance.py      mocked LLM; verifies decisions table rows
 ```
 
 ## Manual steps not automated here
@@ -136,6 +165,9 @@ scaffold can do on its own:
   endpoint/auth shape is a best-effort default, not verified against a live
   account — check Kling's current API docs before trusting it.
 - **Deepgram** (`DEEPGRAM_API_KEY`): Subtitle's forced transcription.
+- **Gemini** (`GEMINI_API_KEY`): Quality Review's video-understanding
+  judge. `tools/video_review.py`'s model name ("gemini-3-pro") is a
+  best-effort default — verify against Google's current model list.
 - **ffmpeg-full** (not the plain `ffmpeg` formula): `brew install
   ffmpeg-full`, then set `FFMPEG_BINARY`/`FFPROBE_BINARY` in `.env` to its
   keg path (default in `.env.example` assumes Homebrew on Apple Silicon —
@@ -149,7 +181,6 @@ scaffold can do on its own:
   Console, fill `YOUTUBE_CLIENT_ID`/`YOUTUBE_CLIENT_SECRET`. The OAuth
   consent flow that produces `YOUTUBE_REFRESH_TOKEN` is Day 7 work
   (publishing stays manual — YouTube Studio — until then, per the blueprint).
-- **Anthropic, Tavily, Voyage, Gemini, OpenAI**: as described above.
 
 ## Deliberately not here yet
 
