@@ -12,11 +12,29 @@ returns once every remaining stub has real logic, likely as a manual
 Day 6-7 exercise rather than a `pytest` assertion.
 """
 
-from studio.graph import NODES, compiled
+from langgraph.graph import END
+
+from studio.graph import NODES, _route_after_fact_check, compiled
 
 
 def test_graph_compiles():
     compiled()
+
+
+def test_routes_to_originality_when_fact_check_passes():
+    state = {"fact_check": {"hard_stop": False}}
+    assert _route_after_fact_check(state) == "originality"
+
+
+def test_routes_to_end_on_hard_stop():
+    state = {"fact_check": {"hard_stop": True}}
+    assert _route_after_fact_check(state) == END
+
+
+def test_routes_to_originality_when_fact_check_missing():
+    # defensive default: no fact_check in state should never be treated as
+    # a silent pass-through hard stop
+    assert _route_after_fact_check({}) == "originality"
 
 
 def test_all_phase1_nodes_present():

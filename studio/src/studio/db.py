@@ -10,6 +10,7 @@ from typing import Any
 from uuid import UUID
 
 import psycopg
+from pgvector.psycopg import register_vector
 from psycopg import Connection
 from psycopg.rows import dict_row
 
@@ -32,6 +33,14 @@ def _json_default(value: Any) -> Any:
 @contextmanager
 def get_connection() -> Iterator[Connection[dict[str, Any]]]:
     conn = psycopg.connect(settings.database_url, row_factory=dict_row)
+    try:
+        register_vector(conn)
+    except psycopg.ProgrammingError:
+        # `vector` extension doesn't exist yet — true only on the very first
+        # connection init_db.py makes, which is the one that creates it.
+        # Nothing on that connection touches a vector column, so proceeding
+        # without the type adapter registered is safe.
+        conn.rollback()
     try:
         yield conn
         conn.commit()
@@ -135,6 +144,14 @@ def create_video_for_case(case_id: Id, channel_id: Id, title: str) -> UUID:
     return row["id"]
 
 
+def get_video(video_id: Id) -> dict[str, Any]:
+    with get_connection() as conn:
+        row = conn.execute("select * from videos where id = %s", (video_id,)).fetchone()
+    if row is None:
+        raise RuntimeError(f"No video with id {video_id}")
+    return dict(row)
+
+
 def update_video(video_id: Id, **fields: Any) -> None:
     if not fields:
         return
@@ -143,6 +160,41 @@ def update_video(video_id: Id, **fields: Any) -> None:
         conn.execute(
             f"update videos set {set_clause}, updated_at = now() where id = %s",  # noqa: S608
             (*fields.values(), video_id),
+        )
+
+
+# --- angle embeddings (Originality & Angle corpus) ------------------------
+
+
+def find_similar_angles(
+    channel_id: Id, embedding: list[float], limit: int = 3
+) -> list[dict[str, Any]]:
+    """Cosine similarity, most similar first. `<=>` is pgvector's cosine
+    *distance* operator (0 = identical), so similarity = 1 - distance."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            select video_id, text_embedded, 1 - (embedding <=> %s::vector) as similarity
+            from angle_embeddings
+            where channel_id = %s
+            order by embedding <=> %s::vector
+            limit %s
+            """,
+            (embedding, channel_id, embedding, limit),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def record_angle_embedding(
+    channel_id: Id, video_id: Id, case_id: Id, text_embedded: str, embedding: list[float]
+) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            """
+            insert into angle_embeddings (channel_id, video_id, case_id, text_embedded, embedding)
+            values (%s, %s, %s, %s, %s::vector)
+            """,
+            (channel_id, video_id, case_id, text_embedded, embedding),
         )
 
 

@@ -1,10 +1,15 @@
 """The Phase 1 pipeline graph.
 
-Linear chain for now, matching blueprint.md Section 8's 12-agent Phase 1
-list (13 nodes below, including Publishing). Conditional edges — Fact
-Checker's hard-stop, Originality's forced human-review flag, Quality
-Review's human-approval wait — are Week 1 Days 3 and 6 work, not Day 1;
-wiring them onto a graph that doesn't compile yet would be premature.
+Matches blueprint.md Section 8's 12-agent Phase 1 list (13 nodes below,
+including Publishing). Mostly a linear chain, with one real branch as of
+Day 3: Fact Checker's hard-stop routes straight to END instead of
+continuing to Originality/Script Writer/etc — see _route_after_fact_check.
+
+Originality's "forced human-review flag" (blueprint.md Section 4.2) is
+deliberately *not* a graph edge here — it degrades gracefully (state carries
+`needs_human_review`) rather than halting the run, because there's no
+Quality Review gate downstream yet for it to route into. That gate, and the
+human-approval wait it implies, is Day 6 work.
 """
 
 from typing import Protocol
@@ -51,15 +56,29 @@ NODES: list[tuple[str, Agent]] = [
 ]
 
 
+def _route_after_fact_check(state: PipelineState) -> str:
+    fact_check = state.get("fact_check") or {}
+    if fact_check.get("hard_stop"):
+        return END
+    return "originality"
+
+
 def build_graph() -> StateGraph:
     graph = StateGraph(PipelineState)
 
-    for name, module in NODES:
-        graph.add_node(name, module.run)
+    for name, agent in NODES:
+        graph.add_node(name, agent.run)
 
     graph.add_edge(START, NODES[0][0])
     for (name, _), (next_name, _) in zip(NODES, NODES[1:]):
+        if name == "fact_checker":
+            continue  # wired conditionally below, not linearly
         graph.add_edge(name, next_name)
+
+    graph.add_conditional_edges(
+        "fact_checker", _route_after_fact_check, {"originality": "originality", END: END}
+    )
+
     graph.add_edge(NODES[-1][0], END)
 
     return graph

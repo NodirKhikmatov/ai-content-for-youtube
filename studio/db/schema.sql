@@ -2,6 +2,7 @@
 -- See ../../blueprint.md Section 5.2 (data layer) and Section 8 (Phase 1 plan).
 
 create extension if not exists pgcrypto;
+create extension if not exists vector;
 
 create table if not exists channels (
     id           uuid primary key default gen_random_uuid(),
@@ -75,7 +76,33 @@ create table if not exists decisions (
     created_at  timestamptz not null default now()
 );
 
+-- Originality & Angle agent's structural-similarity corpus (Section 4.2:
+-- "embeddings of full script structure... across channel history"). In this
+-- Phase 1 graph, Originality runs *before* Script Writer (see graph.py), so
+-- what gets embedded here is the research brief's angle/thesis, not a
+-- script — see agents/originality.py for why.
+--
+-- voyage-3 (1024-dim) is this project's default embedding model as of its
+-- Jan-2026 training cutoff; verify that's still Voyage's current
+-- recommendation before relying on this live, and update the vector(1024)
+-- dimension below to match if you change models.
+create table if not exists angle_embeddings (
+    id            uuid primary key default gen_random_uuid(),
+    channel_id    uuid not null references channels(id) on delete cascade,
+    video_id      uuid not null references videos(id) on delete cascade,
+    case_id       uuid references cases(id),
+    text_embedded text not null,
+    embedding     vector(1024) not null,
+    created_at    timestamptz not null default now()
+);
+
 create index if not exists idx_cases_channel on cases(channel_id);
 create index if not exists idx_videos_channel on videos(channel_id);
 create index if not exists idx_agent_runs_video on agent_runs(video_id);
 create index if not exists idx_decisions_video on decisions(video_id);
+create index if not exists idx_angle_embeddings_channel on angle_embeddings(channel_id);
+
+-- No ivfflat/hnsw index on angle_embeddings.embedding yet: those need a
+-- meaningful row count to tune (lists/m parameters) and a brute-force scan
+-- over dozens-to-hundreds of rows is instant. Add one when the corpus
+-- actually grows large enough for it to matter, not preemptively.

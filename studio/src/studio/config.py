@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     kling_api_key: str | None = None
 
     tavily_api_key: str | None = None
+    voyage_api_key: str | None = None
 
     youtube_client_id: str | None = None
     youtube_client_secret: str | None = None

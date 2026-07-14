@@ -1,6 +1,8 @@
 services:
   postgres:
-    image: postgres:16
+    # pgvector-enabled image, not plain postgres:16 — the Originality & Angle
+    # agent (Day 3) needs the `vector` extension for angle-similarity search.
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     environment:
       POSTGRES_USER: studio
