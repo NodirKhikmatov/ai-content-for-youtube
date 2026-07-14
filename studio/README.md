@@ -19,10 +19,20 @@ Following `blueprint.md` Section 8's day-by-day build order:
   embeddings of each video's research angle, checked against the channel's
   own history via pgvector cosine similarity; it degrades to a
   human-review flag on any failure rather than raising.
+- **Day 4** — Storytelling is real: a six-beat "hook → stakes → escalation →
+  turning point → verdict → aftermath" sheet, with the hook's under-8-second
+  rule enforced as an actual word-count check (one retry with an explicit
+  trim instruction), not just a prompt ask. Script Writer is real: turns the
+  beat sheet into narration prose, then validates the whole script against
+  the 8-15 minute target the same way — one retry, trim or expand. Both
+  raise on structurally bad output (a beat sheet missing a required beat, a
+  missing beat sheet at all) rather than silently continuing. Shared pacing
+  math lives in `pacing.py` so the two agents can't drift onto different
+  assumptions about narration speed.
 
-Storytelling, Script Writer, Voice Synthesis, Video Generation, Video
-Assembly, Subtitle, Quality Review, Compliance, and Publishing are still Day
-4–7 work — see `blueprint.md` Section 8's build-order table.
+Voice Synthesis, Video Generation, Video Assembly, Subtitle, Quality Review,
+Compliance, and Publishing are still Day 5–7 work — see `blueprint.md`
+Section 8's build-order table.
 
 ## Setup
 
@@ -39,9 +49,10 @@ docker compose up -d   # local Postgres (pgvector-enabled) on localhost:5434,
 python scripts/init_db.py
 python scripts/seed_cases.py
 
-pytest                 # 13 tests: structural + Case Sourcing (real, hits the
-                        # dev DB) + Deep Research/Fact Checker/Originality
-                        # (mocked LLM/search/embeddings — no live keys needed)
+pytest                 # 22 tests: structural + Case Sourcing (real, hits the
+                        # dev DB) + Deep Research/Fact Checker/Originality/
+                        # Storytelling/Script Writer (mocked LLM/search/
+                        # embeddings — no live keys needed) + pacing (pure)
 ```
 
 ## Layout
@@ -52,14 +63,16 @@ src/studio/
   state.py     the PipelineState TypedDict every agent reads/writes
   db.py        Postgres connection helper + all queries (incl. pgvector)
   storage.py   Cloudflare R2 client (needs a bucket created by hand first)
+  pacing.py    shared word-count <-> narration-seconds math
   graph.py     builds the LangGraph pipeline; owns the fact-checker
                hard-stop conditional edge
   tools/       external-API clients shared across agents (Tavily search,
                Voyage embeddings)
   agents/      one file per Phase 1 agent — see blueprint.md Section 4 for
                each agent's full spec (inputs/outputs/decision logic/failure
-               handling). case_sourcing, deep_research, fact_checker, and
-               originality have real logic; the rest are still stubs.
+               handling). case_sourcing, deep_research, fact_checker,
+               originality, storytelling, and script_writer have real
+               logic; the rest are still stubs.
 db/schema.sql  channels, cases, videos, agent_runs, decisions, angle_embeddings
 scripts/
   init_db.py     applies schema.sql + seeds the one Phase 1 channel
@@ -70,6 +83,9 @@ tests/
   test_deep_research.py  mocked LLM + search
   test_fact_checker.py   mocked LLM + search; covers pass and hard-stop
   test_originality.py    mocked embeddings; covers pass, flag, and failure
+  test_storytelling.py   mocked LLM; covers pass, hook retry, missing beat
+  test_script_writer.py  mocked LLM; covers pass, pacing retry, missing input
+  test_pacing.py         pure unit tests, no mocking
 ```
 
 ## Manual steps not automated here
