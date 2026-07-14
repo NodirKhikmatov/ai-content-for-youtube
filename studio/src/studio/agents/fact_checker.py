@@ -32,7 +32,7 @@ pattern as Deep Research's two passes.
 """
 
 import logging
-from typing import Literal, cast
+from typing import Literal
 
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
@@ -40,10 +40,16 @@ from pydantic import BaseModel
 from studio import db
 from studio.config import settings
 from studio.state import PipelineState
+from studio.tools.llm import invoke_with_retry
 from studio.tools.search import SearchResult, tavily_search
 
 log = logging.getLogger(__name__)
 
+# Stays on Opus: distinguishing a real contradiction ("disputed") from a
+# source that's merely silent on a detail ("unverifiable") is exactly the
+# kind of nuanced judgment call that's cheap to get subtly wrong on a
+# cheaper model and expensive to get wrong here — a false "disputed" hard-
+# stops the whole video, a false "verified" ships an unfounded claim.
 MODEL = "claude-opus-4-8"
 
 
@@ -115,8 +121,8 @@ def run(state: PipelineState) -> PipelineState:
         structured_llm = llm.with_structured_output(FactCheckResult)
 
         results = tavily_search(f"{case['title']} facts verification")
-        verdict_result = cast(
-            FactCheckResult, structured_llm.invoke(_verify_prompt(case, claims, results))
+        verdict_result: FactCheckResult = invoke_with_retry(
+            structured_llm, _verify_prompt(case, claims, results)
         )
     except Exception as exc:
         db.record_agent_run(video_id, "fact_checker", "failed", error=str(exc))

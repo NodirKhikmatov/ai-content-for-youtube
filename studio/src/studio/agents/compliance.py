@@ -17,7 +17,7 @@ conditional edge (Compliance -> END), not just a returned flag.
 """
 
 import logging
-from typing import Literal, cast
+from typing import Literal
 
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
@@ -25,10 +25,17 @@ from pydantic import BaseModel
 from studio import db
 from studio.config import settings
 from studio.state import PipelineState
+from studio.tools.llm import invoke_with_retry
 
 log = logging.getLogger(__name__)
 
-MODEL = "claude-opus-4-8"
+# Sonnet, not Opus: this is a categorical policy-label task (four fixed
+# risk categories against a fixed rubric), not the kind of open-ended
+# judgment call Deep Research and Fact Checker's claim verification is.
+# Opus everywhere was paying top-tier prices for a classification task —
+# revisit if Sonnet's category calls turn out to need Opus's judgment on
+# real runs, but there's no a priori reason to expect that here.
+MODEL = "claude-sonnet-5"
 
 PolicyCategory = Literal[
     "inauthentic_content", "reused_content", "low_value_content", "limited_ads"
@@ -48,7 +55,7 @@ class ComplianceResult(BaseModel):
 
 
 POLICY_RUBRIC = (
-    "Assess this video against YouTube's 2026 monetization policy "
+    "Assess this video against YouTube's current monetization policy "
     "categories, each rated low/medium/high risk:\n\n"
     "- inauthentic_content: is this mass-produced/templated, interchangeable "
     "with other videos, or made with minimal human editorial input?\n"
@@ -85,7 +92,7 @@ def run(state: PipelineState) -> PipelineState:
             jurisdiction=case["jurisdiction"],
             era=case["era"],
         )
-        result = cast(ComplianceResult, structured_llm.invoke(prompt))
+        result: ComplianceResult = invoke_with_retry(structured_llm, prompt)
     except Exception as exc:
         db.record_agent_run(video_id, "compliance", "failed", error=str(exc))
         raise

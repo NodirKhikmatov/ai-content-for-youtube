@@ -14,6 +14,7 @@ from typing import Any, TypedDict
 import httpx
 
 from studio.config import settings
+from studio.tools.retry import with_retry
 
 DEEPGRAM_URL = "https://api.deepgram.com/v1/listen"
 
@@ -35,18 +36,22 @@ def transcribe(audio_bytes: bytes, mimetype: str = "audio/mpeg") -> TranscriptRe
             "DEEPGRAM_API_KEY missing — Subtitle needs it for forced "
             "alignment. Get a key at deepgram.com and add it to .env."
         )
-    response = httpx.post(
-        DEEPGRAM_URL,
-        headers={
-            "Authorization": f"Token {settings.deepgram_api_key}",
-            "Content-Type": mimetype,
-        },
-        params={"model": "nova-2", "smart_format": "true", "punctuate": "true"},
-        content=audio_bytes,
-        timeout=120.0,
-    )
-    response.raise_for_status()
-    data: dict[str, Any] = response.json()
+
+    def _call() -> httpx.Response:
+        response = httpx.post(
+            DEEPGRAM_URL,
+            headers={
+                "Authorization": f"Token {settings.deepgram_api_key}",
+                "Content-Type": mimetype,
+            },
+            params={"model": "nova-2", "smart_format": "true", "punctuate": "true"},
+            content=audio_bytes,
+            timeout=120.0,
+        )
+        response.raise_for_status()
+        return response
+
+    data: dict[str, Any] = with_retry(_call).json()
     alt = data["results"]["channels"][0]["alternatives"][0]
     words: list[Word] = [
         {"word": w["word"], "start": w["start"], "end": w["end"]} for w in alt.get("words", [])

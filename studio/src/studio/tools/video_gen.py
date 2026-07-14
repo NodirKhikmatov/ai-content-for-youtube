@@ -27,6 +27,7 @@ import httpx
 import jwt
 
 from studio.config import settings
+from studio.tools.retry import with_retry
 
 log = logging.getLogger(__name__)
 
@@ -73,26 +74,46 @@ class KlingBackend:
         return {"Authorization": f"Bearer {token}"}
 
     def generate_clip(self, prompt: str, duration_seconds: int = 5) -> bytes:
-        submit = self._client.post(
+        # Deliberately not wrapped in with_retry: this POST creates a new,
+        # billed Kling generation job — it is not idempotent like the poll
+        # and download calls below. If the request reaches Kling and the
+        # job starts, but the *response* is lost (a timeout or connection
+        # reset — exactly the failure mode with_retry exists to paper over
+        # for safe calls), a blind retry here would submit a second,
+        # duplicate, separately-billed job with no way to detect or clean
+        # up the orphaned first one. A failed submit fails this clip
+        # generation outright; retrying that decision belongs to the
+        # caller (Video Generation agent raises and fails the whole run,
+        # or a human re-runs the pipeline), not to a blanket transport
+        # retry that can't tell "never reached the server" apart from
+        # "reached it and maybe already succeeded".
+        response = self._client.post(
             "/videos/text2video",
             json={"prompt": prompt, "duration": duration_seconds, "mode": "std"},
             headers=self._headers(),
         )
-        submit.raise_for_status()
-        job_id = submit.json()["data"]["task_id"]
+        response.raise_for_status()
+        job_id = response.json()["data"]["task_id"]
 
         deadline = time.monotonic() + POLL_TIMEOUT_SECONDS
         while time.monotonic() < deadline:
             # Re-derive headers each poll too: a slow-completing job can
             # legitimately outlive one JWT's expiry window.
-            status = self._client.get(f"/videos/text2video/{job_id}", headers=self._headers())
-            status.raise_for_status()
-            body = status.json()["data"]
+            def _poll() -> httpx.Response:
+                response = self._client.get(f"/videos/text2video/{job_id}", headers=self._headers())
+                response.raise_for_status()
+                return response
+
+            body = with_retry(_poll).json()["data"]
             if body["task_status"] == "succeed":
                 video_url = body["task_result"]["videos"][0]["url"]
-                video = httpx.get(video_url, timeout=60.0)
-                video.raise_for_status()
-                return video.content
+
+                def _download() -> httpx.Response:
+                    response = httpx.get(video_url, timeout=60.0)
+                    response.raise_for_status()
+                    return response
+
+                return with_retry(_download).content
             if body["task_status"] == "failed":
                 raise RuntimeError(f"Kling generation failed: {body.get('task_status_msg')}")
             time.sleep(POLL_INTERVAL_SECONDS)

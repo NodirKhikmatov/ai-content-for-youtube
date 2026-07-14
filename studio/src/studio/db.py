@@ -153,6 +153,11 @@ def get_video(video_id: Id) -> dict[str, Any]:
 
 
 def update_video(video_id: Id, **fields: Any) -> None:
+    """Column names come from **kwargs, always literal keyword arguments at
+    the call site (e.g. `status="rejected"`), never a dict built from
+    external input — that's what makes building the SET clause from dict
+    keys safe despite the noqa below. Keep it that way: never call this
+    with `**some_external_dict`."""
     if not fields:
         return
     set_clause = ", ".join(f"{key} = %s" for key in fields)
@@ -227,6 +232,26 @@ def record_agent_run(
         ).fetchone()
     assert row is not None, "INSERT ... RETURNING always yields a row on success"
     return row["id"]
+
+
+def get_latest_agent_output(video_id: Id, agent_name: str) -> dict[str, Any] | None:
+    """Most recent *succeeded* run's output for a given agent on a given
+    video, or None if it never succeeded — used by scripts/run_pipeline.py
+    to resume a video from the first stage that hasn't actually completed,
+    reusing what's already in the DB instead of re-running it. A stage that
+    only ever `failed` correctly falls through to None here (get retried),
+    not treated as done."""
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            select output from agent_runs
+            where video_id = %s and agent_name = %s and status = 'succeeded'
+            order by started_at desc
+            limit 1
+            """,
+            (video_id, agent_name),
+        ).fetchone()
+    return row["output"] if row else None
 
 
 def record_decision(

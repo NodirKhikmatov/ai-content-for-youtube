@@ -26,10 +26,16 @@ from studio import db
 from studio.config import settings
 from studio.pacing import seconds_for_words, word_count, words_for_seconds
 from studio.state import PipelineState
+from studio.tools.llm import invoke_with_retry
 
 log = logging.getLogger(__name__)
 
-MODEL = "claude-opus-4-8"
+# Sonnet, not Opus: this is structural beat-sheet formatting against a
+# fixed template (hook/stakes/escalation/turning_point/verdict/aftermath),
+# not the open-ended research judgment Deep Research and Fact Checker do.
+# Script Writer stays on Opus below — it produces the actual viewer-facing
+# narration prose, where writing quality has a direct line to retention.
+MODEL = "claude-sonnet-5"
 HOOK_MAX_SECONDS = 8
 MAX_HOOK_RETRIES = 1
 
@@ -86,7 +92,7 @@ def run(state: PipelineState) -> PipelineState:
         llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key)  # type: ignore[call-arg,arg-type]
         structured_llm = llm.with_structured_output(BeatSheet)
 
-        sheet = cast(BeatSheet, structured_llm.invoke(_prompt(case, brief)))
+        sheet: BeatSheet = invoke_with_retry(structured_llm, _prompt(case, brief))
         hook = next((b for b in sheet.beats if b.name == "hook"), None)
 
         retries = 0
@@ -100,7 +106,9 @@ def run(state: PipelineState) -> PipelineState:
                 f"too long for {HOOK_MAX_SECONDS} seconds. Cut it to "
                 f"{words_for_seconds(HOOK_MAX_SECONDS)} words or fewer."
             )
-            sheet = cast(BeatSheet, structured_llm.invoke(_prompt(case, brief, retry_note)))
+            sheet = cast(
+                BeatSheet, invoke_with_retry(structured_llm, _prompt(case, brief, retry_note))
+            )
             hook = next((b for b in sheet.beats if b.name == "hook"), None)
             retries += 1
 

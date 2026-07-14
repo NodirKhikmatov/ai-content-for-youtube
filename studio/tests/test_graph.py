@@ -19,12 +19,41 @@ from studio.graph import (
     _route_after_compliance,
     _route_after_fact_check,
     _route_after_quality_review,
+    _route_from_start,
     compiled,
 )
 
 
 def test_graph_compiles():
     compiled()
+
+
+def test_fresh_run_starts_at_case_sourcing():
+    assert _route_from_start({}) == "case_sourcing"
+
+
+def test_resume_with_only_video_id_starts_at_deep_research():
+    assert _route_from_start({"video_id": "x"}) == "deep_research"
+
+
+def test_resume_with_research_brief_skips_to_fact_checker():
+    state = {"video_id": "x", "research_brief": {"thesis": "t"}}
+    assert _route_from_start(state) == "fact_checker"
+
+
+def test_resume_with_fact_check_skips_to_originality():
+    state = {"video_id": "x", "research_brief": {}, "fact_check": {"hard_stop": False}}
+    assert _route_from_start(state) == "originality"
+
+
+def test_resume_with_beat_sheet_skips_to_script_writer():
+    state = {"video_id": "x", "fact_check": {}, "beat_sheet": {"beats": []}}
+    assert _route_from_start(state) == "script_writer"
+
+
+def test_resume_with_script_skips_to_voice_synthesis():
+    state = {"video_id": "x", "beat_sheet": {}, "script": "narration text"}
+    assert _route_from_start(state) == "voice_synthesis"
 
 
 def test_routes_to_originality_when_fact_check_passes():

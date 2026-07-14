@@ -10,6 +10,7 @@ from typing import TypedDict
 import httpx
 
 from studio.config import settings
+from studio.tools.retry import with_retry
 
 TAVILY_URL = "https://api.tavily.com/search"
 
@@ -26,18 +27,22 @@ def tavily_search(query: str, max_results: int = 5) -> list[SearchResult]:
             "TAVILY_API_KEY missing — Deep Research needs it to ground claims "
             "in real sources. Get a key at tavily.com and add it to .env."
         )
-    response = httpx.post(
-        TAVILY_URL,
-        json={
-            "api_key": settings.tavily_api_key,
-            "query": query,
-            "max_results": max_results,
-            "search_depth": "advanced",
-        },
-        timeout=30.0,
-    )
-    response.raise_for_status()
-    data = response.json()
+
+    def _call() -> httpx.Response:
+        response = httpx.post(
+            TAVILY_URL,
+            json={
+                "api_key": settings.tavily_api_key,
+                "query": query,
+                "max_results": max_results,
+                "search_depth": "advanced",
+            },
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        return response
+
+    data = with_retry(_call).json()
     return [
         {"title": r["title"], "url": r["url"], "content": r["content"]}
         for r in data.get("results", [])

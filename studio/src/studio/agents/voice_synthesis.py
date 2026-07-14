@@ -32,15 +32,6 @@ log = logging.getLogger(__name__)
 MEDIA_DIR = Path("media")
 
 
-def _best_effort_upload(local_path: Path, r2_key: str) -> bool:
-    try:
-        storage.upload_file(str(local_path), r2_key)
-        return True
-    except Exception as exc:
-        log.warning("R2 upload skipped for %s: %s", r2_key, exc)
-        return False
-
-
 def run(state: PipelineState) -> PipelineState:
     video_id = state["video_id"]
     script = state.get("script")
@@ -60,7 +51,7 @@ def run(state: PipelineState) -> PipelineState:
         raise
 
     r2_key = f"videos/{video_id}/voice.mp3"
-    uploaded = _best_effort_upload(local_path, r2_key)
+    uploaded = storage.best_effort_upload(local_path, r2_key)
 
     db.update_video(video_id, voice_audio_path=str(local_path))
     db.record_agent_run(

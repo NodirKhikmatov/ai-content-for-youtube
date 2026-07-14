@@ -14,7 +14,6 @@ until Phase 2 — this agent's prose is deliberately plain today, not final.
 """
 
 import logging
-from typing import cast
 
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel
@@ -23,9 +22,16 @@ from studio import db
 from studio.config import settings
 from studio.pacing import seconds_for_words, word_count, words_for_seconds
 from studio.state import PipelineState
+from studio.tools.llm import invoke_with_retry
 
 log = logging.getLogger(__name__)
 
+# Stays on Opus: this produces the actual narration prose a viewer hears —
+# writing quality here has a direct line to watch time and retention, the
+# thing this whole system exists to produce. Unlike Storytelling's
+# structural formatting or Compliance's categorical labeling, there's no
+# fixed template to fill in; it's open-ended prose quality, which is
+# exactly what the strongest model should be spent on.
 MODEL = "claude-opus-4-8"
 TARGET_RUNTIME_SECONDS = (8 * 60, 15 * 60)  # blueprint.md Section 2: 8-15 min long-form
 PACING_TOLERANCE = 0.15
@@ -71,7 +77,7 @@ def run(state: PipelineState) -> PipelineState:
         llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key)  # type: ignore[call-arg,arg-type]
         structured_llm = llm.with_structured_output(Script)
 
-        result = cast(Script, structured_llm.invoke(_prompt(case, beat_sheet)))
+        result: Script = invoke_with_retry(structured_llm, _prompt(case, beat_sheet))
         seconds = seconds_for_words(word_count(result.narration))
 
         retries = 0
@@ -83,7 +89,7 @@ def run(state: PipelineState) -> PipelineState:
                 f"{TARGET_RUNTIME_SECONDS[0] // 60} and "
                 f"{TARGET_RUNTIME_SECONDS[1] // 60} minutes."
             )
-            result = cast(Script, structured_llm.invoke(_prompt(case, beat_sheet, retry_note)))
+            result = invoke_with_retry(structured_llm, _prompt(case, beat_sheet, retry_note))
             seconds = seconds_for_words(word_count(result.narration))
             retries += 1
 

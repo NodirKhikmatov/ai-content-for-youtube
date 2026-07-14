@@ -32,6 +32,8 @@ MAX_WORDS_PER_LINE = 8
 MAX_SECONDS_PER_LINE = 4.0
 
 
+
+
 def word_error_rate(reference: str, hypothesis: str) -> float:
     """Standard word-level Levenshtein distance / reference length."""
     ref_words = reference.split()
@@ -89,15 +91,6 @@ def words_to_srt(words: list[Word]) -> str:
     return "\n".join(blocks)
 
 
-def _best_effort_upload(local_path: Path, r2_key: str) -> bool:
-    try:
-        storage.upload_file(str(local_path), r2_key)
-        return True
-    except Exception as exc:
-        log.warning("R2 upload skipped for %s: %s", r2_key, exc)
-        return False
-
-
 def run(state: PipelineState) -> PipelineState:
     video_id = state["video_id"]
     assembled_video_path = state.get("assembled_video_path")
@@ -137,9 +130,9 @@ def run(state: PipelineState) -> PipelineState:
         except Exception as exc:
             log.warning("subtitle: burn-in failed, keeping un-captioned cut (%s)", exc)
 
-    uploaded_srt = _best_effort_upload(srt_path, f"videos/{video_id}/captions.srt")
+    uploaded_srt = storage.best_effort_upload(srt_path, f"videos/{video_id}/captions.srt")
     uploaded_video = (
-        _best_effort_upload(Path(final_path), f"videos/{video_id}/final.mp4")
+        storage.best_effort_upload(Path(final_path), f"videos/{video_id}/final.mp4")
         if final_path != assembled_video_path
         else False
     )

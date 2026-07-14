@@ -11,3 +11,4 @@ dist/
 build/
 media/
 *.db
+.DS_Store
