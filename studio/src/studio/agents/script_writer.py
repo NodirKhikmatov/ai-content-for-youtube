@@ -68,7 +68,7 @@ def run(state: PipelineState) -> PipelineState:
     high_bound = TARGET_RUNTIME_SECONDS[1] * (1 + PACING_TOLERANCE)
 
     try:
-        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key, temperature=0.4)  # type: ignore[call-arg,arg-type]
+        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key)  # type: ignore[call-arg,arg-type]
         structured_llm = llm.with_structured_output(Script)
 
         result = cast(Script, structured_llm.invoke(_prompt(case, beat_sheet)))

@@ -177,17 +177,24 @@ scaffold can do on its own:
 
 - **Anthropic** (`ANTHROPIC_API_KEY`): Deep Research and Fact Checker.
 - **Tavily** (`TAVILY_API_KEY`): the search grounding both of those use.
-- **Voyage AI** (`VOYAGE_API_KEY`): Originality & Angle's embeddings. Verify
-  the `voyage-3` model choice in `tools/embeddings.py` is still current —
-  it's a Jan-2026-training-cutoff default, not a live lookup.
+- **Voyage AI** (`VOYAGE_API_KEY`): Originality & Angle's embeddings. Uses
+  `voyage-4`, confirmed live against Voyage's current docs as of 2026-07
+  (the original `voyage-3` default went legacy the same month it was
+  chosen — Voyage shipped voyage-4 within weeks of this project's Jan-2026
+  training cutoff).
 - **ElevenLabs** (`ELEVENLABS_API_KEY`): Voice Synthesis.
-- **Kling** (`KLING_API_KEY`): Video Generation. `tools/video_gen.py`'s
-  endpoint/auth shape is a best-effort default, not verified against a live
-  account — check Kling's current API docs before trusting it.
+- **Kling** (`KLING_ACCESS_KEY` + `KLING_SECRET_KEY`, a pair — not one API
+  key): Video Generation. Auth is a signed JWT per request (confirmed
+  against docs.qingque.cn's auth section), but `tools/video_gen.py`'s
+  endpoint/job-polling shape is still a best-effort default, not verified
+  against a live account — check Kling's current API docs before trusting
+  it.
 - **Deepgram** (`DEEPGRAM_API_KEY`): Subtitle's forced transcription.
 - **Gemini** (`GEMINI_API_KEY`): Quality Review's video-understanding
-  judge. `tools/video_review.py`'s model name ("gemini-3-pro") is a
-  best-effort default — verify against Google's current model list.
+  judge. `tools/video_review.py` uses `gemini-3.1-pro-preview`, confirmed
+  live against Google's model list as of 2026-07 — re-verify if it stops
+  working, since Google ships new generations under a "-preview" suffix
+  first and may move the stable name later.
 - **ffmpeg-full** (not the plain `ffmpeg` formula): `brew install
   ffmpeg-full`, then set `FFMPEG_BINARY`/`FFPROBE_BINARY` in `.env` to its
   keg path (default in `.env.example` assumes Homebrew on Apple Silicon —

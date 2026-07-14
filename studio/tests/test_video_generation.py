@@ -1,6 +1,7 @@
 """Video Generation agent test — mocks KlingBackend so this runs without
-KLING_API_KEY. Covers one clip generated per beat and a mid-generation
-failure raising rather than silently producing a partial clip set.
+KLING_ACCESS_KEY/KLING_SECRET_KEY. Covers one clip generated per beat and a
+mid-generation failure raising rather than silently producing a partial
+clip set.
 """
 
 import shutil

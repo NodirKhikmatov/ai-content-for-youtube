@@ -19,6 +19,7 @@ dependencies = [
     "voyageai>=0.3",
     "pgvector>=0.3",
     "google-genai>=0.3",
+    "pyjwt>=2.9",
 ]
 
 [project.optional-dependencies]

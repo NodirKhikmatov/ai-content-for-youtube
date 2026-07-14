@@ -11,10 +11,10 @@ principle as Fact Checker's "never default to assume true" rule.
 """
 
 import logging
-from typing import Literal, cast
+from typing import Literal, TypeVar, cast
 
 from langchain_anthropic import ChatAnthropic
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from studio import db
 from studio.config import settings
@@ -56,6 +56,37 @@ class ResearchBrief(BaseModel):
     )
 
 
+class CounterpointResult(BaseModel):
+    """Second-pass output: unlike ResearchBrief, it has no thesis/turning_point
+    of its own — the counterpoint prompt only ever asks for these two fields."""
+
+    counterpoints: list[SourcedClaim] = Field(default_factory=list)
+    open_questions: list[str] = Field(default_factory=list)
+
+
+T = TypeVar("T", bound=BaseModel)
+
+
+def _invoke_with_retry(structured_llm, prompt: str) -> T:  # type: ignore[no-untyped-def,type-var]
+    """Claude's tool-call output occasionally drops a required field even
+    though the schema declares it required (seen live: `turning_point` and
+    `thesis` both missing on separate real runs) — not a prompt-wording
+    problem, since the same prompt succeeds most of the time. One retry
+    with an explicit reminder, same pattern as Storytelling/Script Writer's
+    pacing retries, rather than letting the whole agent fail on a transient
+    parse miss."""
+    try:
+        return cast(T, structured_llm.invoke(prompt))
+    except ValidationError as exc:
+        missing = ", ".join(str(e["loc"][0]) for e in exc.errors() if e["type"] == "missing")
+        retry_prompt = (
+            f"{prompt}\n\nYour previous response was missing required field(s): "
+            f"{missing or 'unknown'}. Return a complete response with every "
+            f"required field filled in."
+        )
+        return cast(T, structured_llm.invoke(retry_prompt))
+
+
 def _format_sources(results: list[SearchResult]) -> str:
     if not results:
         return "(no search results returned)"
@@ -75,7 +106,16 @@ def _gather_prompt(case: dict, results: list[SearchResult]) -> str:
         f"against the sources, list the specific claims that support it with a "
         f"source URL and a confidence level for each, and state the thesis — why "
         f"this case, why this angle, told now. Every claim must cite one of the "
-        f"URLs above; do not invent sources."
+        f"URLs above; do not invent sources.\n\n"
+        f"Each claim will be independently re-verified against a fresh, separate "
+        f"search before anything gets scripted, so state claims at the level of "
+        f"detail the source material above actually supports — do not add a "
+        f"specific date, exact duration, verbatim quote, or vote count unless "
+        f"that precise detail literally appears in the source text. Prefer a "
+        f"claim like 'the jury deliberated for an extended period before reaching "
+        f"a verdict' over inventing a specific hour count the sources don't state. "
+        f"A slightly less specific claim that holds up under re-verification is "
+        f"more useful than a precise one that doesn't."
     )
 
 
@@ -106,13 +146,13 @@ def run(state: PipelineState) -> PipelineState:
         # langchain-anthropic's stubs are stricter than its actual pydantic
         # validation: `model` and a plain-str `api_key` both work fine at
         # runtime (verified by hand), the stub just doesn't know it.
-        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key, temperature=0)  # type: ignore[call-arg,arg-type]
+        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key)  # type: ignore[call-arg,arg-type]
         structured_llm = llm.with_structured_output(ResearchBrief)
 
         gather_results = tavily_search(f"{case['title']} case facts timeline outcome")
         # with_structured_output's stub returns dict | BaseModel generically;
         # passing a Pydantic model as the schema always yields that model.
-        brief = cast(ResearchBrief, structured_llm.invoke(_gather_prompt(case, gather_results)))
+        brief: ResearchBrief = _invoke_with_retry(structured_llm, _gather_prompt(case, gather_results))
 
         if len(gather_results) < MIN_SOURCES_FOR_CONFIDENCE:
             brief.open_questions.append(
@@ -121,8 +161,9 @@ def run(state: PipelineState) -> PipelineState:
             )
 
         counter_results = tavily_search(f"{case['title']} controversy disputed criticism")
-        counter_pass = cast(
-            ResearchBrief, structured_llm.invoke(_counterpoint_prompt(case, brief, counter_results))
+        counterpoint_llm = llm.with_structured_output(CounterpointResult)
+        counter_pass: CounterpointResult = _invoke_with_retry(
+            counterpoint_llm, _counterpoint_prompt(case, brief, counter_results)
         )
         brief.counterpoints = counter_pass.counterpoints
         brief.open_questions.extend(counter_pass.open_questions)

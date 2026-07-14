@@ -5,12 +5,18 @@ rather than hard-coded, because Sora 2 was fully deprecated about six
 months after launch (blueprint.md Friction 05). Never assume one video-gen
 vendor survives the build.
 
-Kling's exact API surface (endpoint, auth scheme, job-polling shape) is
-this project's best effort as of its Jan-2026 training cutoff, not a
-verified-live integration — there's no official Python SDK to check
-against the way there was for ElevenLabs. Verify against
-https://docs.qingque.cn (Kling's API docs) or your account's current
-integration guide before trusting this live.
+Kling's exact API surface (endpoint, job-polling shape) is this project's
+best effort as of its Jan-2026 training cutoff, not a verified-live
+integration — there's no official Python SDK to check against the way
+there was for ElevenLabs. Verify against https://docs.qingque.cn (Kling's
+API docs) or your account's current integration guide before trusting this
+live.
+
+Auth is *not* best-effort, though: Kling's official API authenticates with
+a short-lived JWT signed (HS256) from an access-key/secret-key pair — not
+a static bearer token — confirmed against docs.qingque.cn's auth section.
+A prior version of this file treated KLING_API_KEY as a plain bearer token,
+which would have failed authentication against every real request.
 """
 
 import logging
@@ -18,6 +24,7 @@ import time
 from typing import Protocol
 
 import httpx
+import jwt
 
 from studio.config import settings
 
@@ -27,35 +34,58 @@ KLING_BASE_URL = "https://api.klingai.com/v1"
 POLL_INTERVAL_SECONDS = 5
 POLL_TIMEOUT_SECONDS = 300
 
+# JWT validity window: issued slightly in the past (clock-skew tolerance)
+# and expiring well within Kling's documented max, regenerated fresh for
+# every request rather than cached — simplest correct thing at MVP's
+# request volume (a handful of clips per video, not a hot loop).
+JWT_NOT_BEFORE_SKEW_SECONDS = 5
+JWT_EXPIRY_SECONDS = 1800
+
 
 class VideoGenBackend(Protocol):
     def generate_clip(self, prompt: str, duration_seconds: int) -> bytes: ...
 
 
+def _kling_jwt(access_key: str, secret_key: str) -> str:
+    now = int(time.time())
+    payload = {
+        "iss": access_key,
+        "exp": now + JWT_EXPIRY_SECONDS,
+        "nbf": now - JWT_NOT_BEFORE_SKEW_SECONDS,
+    }
+    return jwt.encode(payload, secret_key, algorithm="HS256", headers={"alg": "HS256", "typ": "JWT"})
+
+
 class KlingBackend:
     def __init__(self) -> None:
-        if not settings.kling_api_key:
+        if not settings.kling_access_key or not settings.kling_secret_key:
             raise RuntimeError(
-                "KLING_API_KEY missing — Video Generation needs it. Get a key "
-                "at klingai.com and add it to .env."
+                "KLING_ACCESS_KEY/KLING_SECRET_KEY missing — Video Generation needs "
+                "both (Kling issues an access-key/secret-key pair, not a single API "
+                "key). Get them at klingai.com and add them to .env."
             )
-        self._client = httpx.Client(
-            base_url=KLING_BASE_URL,
-            headers={"Authorization": f"Bearer {settings.kling_api_key}"},
-            timeout=30.0,
-        )
+        self._access_key = settings.kling_access_key
+        self._secret_key = settings.kling_secret_key
+        self._client = httpx.Client(base_url=KLING_BASE_URL, timeout=30.0)
+
+    def _headers(self) -> dict[str, str]:
+        token = _kling_jwt(self._access_key, self._secret_key)
+        return {"Authorization": f"Bearer {token}"}
 
     def generate_clip(self, prompt: str, duration_seconds: int = 5) -> bytes:
         submit = self._client.post(
             "/videos/text2video",
             json={"prompt": prompt, "duration": duration_seconds, "mode": "std"},
+            headers=self._headers(),
         )
         submit.raise_for_status()
         job_id = submit.json()["data"]["task_id"]
 
         deadline = time.monotonic() + POLL_TIMEOUT_SECONDS
         while time.monotonic() < deadline:
-            status = self._client.get(f"/videos/text2video/{job_id}")
+            # Re-derive headers each poll too: a slow-completing job can
+            # legitimately outlive one JWT's expiry window.
+            status = self._client.get(f"/videos/text2video/{job_id}", headers=self._headers())
             status.raise_for_status()
             body = status.json()["data"]
             if body["task_status"] == "succeed":

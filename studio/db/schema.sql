@@ -82,10 +82,10 @@ create table if not exists decisions (
 -- what gets embedded here is the research brief's angle/thesis, not a
 -- script — see agents/originality.py for why.
 --
--- voyage-3 (1024-dim) is this project's default embedding model as of its
--- Jan-2026 training cutoff; verify that's still Voyage's current
--- recommendation before relying on this live, and update the vector(1024)
--- dimension below to match if you change models.
+-- voyage-4 (1024-dim default) is this project's embedding model, confirmed
+-- live 2026-07 against Voyage's current docs (their voyage-3 line is now
+-- legacy). Update the vector(1024) dimension below if you change models or
+-- tiers — voyage-4 also supports 256/512/2048 via Matryoshka learning.
 create table if not exists angle_embeddings (
     id            uuid primary key default gen_random_uuid(),
     channel_id    uuid not null references channels(id) on delete cascade,

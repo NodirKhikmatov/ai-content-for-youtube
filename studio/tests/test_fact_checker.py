@@ -84,6 +84,20 @@ def test_disputed_claim_hard_stops(monkeypatch, seeded_video):
     assert video["status"] == "rejected"
 
 
+def test_unverifiable_claim_does_not_hard_stop(monkeypatch, seeded_video):
+    _mock_llm(
+        monkeypatch,
+        [ClaimVerdict(claim="a claim", verdict="unverifiable", rationale="no source confirms or denies it")],
+    )
+
+    result = fact_checker.run(dict(seeded_video))
+
+    assert result["fact_check"]["hard_stop"] is False
+    assert result["fact_check"]["unverifiable_claims"] == ["a claim"]
+    video = db.get_video(seeded_video["video_id"])
+    assert video["status"] == "researched"
+
+
 def test_no_claims_hard_stops_without_calling_llm(monkeypatch, seeded_video):
     monkeypatch.setattr(fact_checker.settings, "anthropic_api_key", "fake-key-for-test")
 

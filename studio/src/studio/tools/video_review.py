@@ -6,10 +6,15 @@ referenced in a prompt, unlike a small inline image — a genuinely different
 API shape from the structured-output plumbing the Claude-based agents use,
 so this doesn't try to force it through the same pattern. API surface
 confirmed against the installed google-genai SDK (files.upload / files.get
-/ models.generate_content), not guessed — but the model name itself
-("gemini-3-pro") is this project's Jan-2026-training-cutoff best guess for
-what "Gemini 3.1 Pro" resolves to as an API model string; verify against
-https://ai.google.dev/gemini-api/docs/models before trusting this live.
+/ models.generate_content), not guessed.
+
+Model string confirmed live against ai.google.dev/gemini-api/docs/models
+(2026-07): "Gemini 3.1 Pro" is `gemini-3.1-pro-preview` — it wasn't
+released until 2026-02-19, after this project's Jan-2026 training cutoff,
+which is why the original guess here ("gemini-3-pro") named a model that
+didn't exist yet rather than just a stale name. Re-verify against that URL
+if this stops working — Google ships new generations under a "-preview"
+suffix first.
 """
 
 import time
@@ -21,7 +26,7 @@ from pydantic import BaseModel
 
 from studio.config import settings
 
-MODEL = "gemini-3-pro"
+MODEL = "gemini-3.1-pro-preview"
 POLL_INTERVAL_SECONDS = 2
 POLL_TIMEOUT_SECONDS = 120
 
@@ -45,6 +50,11 @@ def review_video(video_path: str, prompt: str, response_schema: type[T]) -> T:
 
     if uploaded.state and uploaded.state.name == "FAILED":
         raise RuntimeError(f"Gemini file processing failed for {video_path}")
+    if uploaded.state and uploaded.state.name == "PROCESSING":
+        raise TimeoutError(
+            f"Gemini file processing for {video_path} did not finish within "
+            f"{POLL_TIMEOUT_SECONDS}s"
+        )
 
     response = client.models.generate_content(
         model=MODEL,

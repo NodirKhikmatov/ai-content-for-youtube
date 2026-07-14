@@ -83,7 +83,7 @@ def run(state: PipelineState) -> PipelineState:
     brief = state.get("research_brief", {})
 
     try:
-        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key, temperature=0.3)  # type: ignore[call-arg,arg-type]
+        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key)  # type: ignore[call-arg,arg-type]
         structured_llm = llm.with_structured_output(BeatSheet)
 
         sheet = cast(BeatSheet, structured_llm.invoke(_prompt(case, brief)))

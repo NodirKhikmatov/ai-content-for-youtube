@@ -77,7 +77,7 @@ def run(state: PipelineState) -> PipelineState:
     script = state.get("script", "")
 
     try:
-        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key, temperature=0)  # type: ignore[call-arg,arg-type]
+        llm = ChatAnthropic(model=MODEL, api_key=settings.anthropic_api_key)  # type: ignore[call-arg,arg-type]
         structured_llm = llm.with_structured_output(ComplianceResult)
         prompt = POLICY_RUBRIC.format(
             script=script,

@@ -14,7 +14,11 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
 
     elevenlabs_api_key: str | None = None
-    kling_api_key: str | None = None
+    # Kling's real API (docs.qingque.cn) authenticates with a signed JWT
+    # generated from an access-key/secret-key pair, not a single static
+    # bearer token — see tools/video_gen.py's module docstring.
+    kling_access_key: str | None = None
+    kling_secret_key: str | None = None
     deepgram_api_key: str | None = None
 
     tavily_api_key: str | None = None
