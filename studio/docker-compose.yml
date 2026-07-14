@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: studio
+      POSTGRES_PASSWORD: studio
+      POSTGRES_DB: studio
+    ports:
+      # host 5434 -> avoids colliding with the native postgres@14/@16 already
+      # running on this machine (5432) and another project's dev container
+      # already on 5433.
+      - "5434:5432"
+    volumes:
+      - studio_pg_data:/var/lib/postgresql/data
+
+volumes:
+  studio_pg_data:

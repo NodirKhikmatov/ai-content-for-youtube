@@ -1,0 +1,1156 @@
+<title>AI Content Studio — Strategic &amp; Technical Blueprint</title>
+<style>
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+  }
+
+  :root {
+    --ink: #16181c;
+    --ink-soft: #43453f;
+    --muted: #6b6d63;
+    --paper: #f3f4f1;
+    --paper-raised: #eae9e2;
+    --paper-card: #fbfbf9;
+    --line: #d9d8cd;
+    --line-soft: #e6e5db;
+    --accent: #b3182f;
+    --accent-ink: #ffffff;
+    --accent-soft: #f4dcdd;
+    --accent-soft-line: #e3b3ba;
+    --good: #2f6b45;
+    --warn: #8a5a12;
+
+    --font-display: ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #ece9e2;
+      --ink-soft: #c7c4b9;
+      --muted: #9b9a8d;
+      --paper: #17181a;
+      --paper-raised: #1f2123;
+      --paper-card: #1c1d1f;
+      --line: #34362f;
+      --line-soft: #292a26;
+      --accent: #ff6b73;
+      --accent-ink: #1a0507;
+      --accent-soft: #3a1518;
+      --accent-soft-line: #5c2429;
+      --good: #6fbf85;
+      --warn: #d7a04c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ece9e2;
+    --ink-soft: #c7c4b9;
+    --muted: #9b9a8d;
+    --paper: #17181a;
+    --paper-raised: #1f2123;
+    --paper-card: #1c1d1f;
+    --line: #34362f;
+    --line-soft: #292a26;
+    --accent: #ff6b73;
+    --accent-ink: #1a0507;
+    --accent-soft: #3a1518;
+    --accent-soft-line: #5c2429;
+    --good: #6fbf85;
+    --warn: #d7a04c;
+  }
+  :root[data-theme="light"] {
+    --ink: #16181c;
+    --ink-soft: #43453f;
+    --muted: #6b6d63;
+    --paper: #f3f4f1;
+    --paper-raised: #eae9e2;
+    --paper-card: #fbfbf9;
+    --line: #d9d8cd;
+    --line-soft: #e6e5db;
+    --accent: #b3182f;
+    --accent-ink: #ffffff;
+    --accent-soft: #f4dcdd;
+    --accent-soft-line: #e3b3ba;
+    --good: #2f6b45;
+    --warn: #8a5a12;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+
+  a { color: var(--accent); text-decoration-color: var(--accent-soft-line); text-underline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ---------- shell / layout ---------- */
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+    display: grid;
+    grid-template-columns: 236px minmax(0, 740px);
+    gap: 3.5rem;
+    justify-content: center;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+    nav.toc { position: static; max-height: none; margin-bottom: 2rem; }
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding-right: 0.5rem;
+  }
+  nav.toc .toc-title {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.9rem;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    display: block;
+    padding: 0.32rem 0 0.32rem 0.85rem;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+
+  main { min-width: 0; }
+
+  /* ---------- header ---------- */
+  header.doc-head {
+    padding-bottom: 2.4rem;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--line);
+  }
+  header.doc-head .eyebrow { display: block; margin-bottom: 0.9rem; }
+  h1.title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.7rem);
+    line-height: 1.12;
+    margin: 0 0 0.9rem;
+    text-wrap: balance;
+    font-weight: 600;
+  }
+  p.dek {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1.15rem;
+    max-width: 42em;
+    margin: 0 0 1.1rem;
+    text-wrap: balance;
+  }
+  .meta-row {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    gap: 1.4rem;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- section rhythm ---------- */
+  section { margin-bottom: 4rem; scroll-margin-top: 1.5rem; }
+  section > .section-head { margin-bottom: 1.6rem; }
+  .section-num {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-right: 0.15em;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.65rem;
+    margin: 0 0 0.3rem;
+    text-wrap: balance;
+    font-weight: 600;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: 1.22rem;
+    margin: 2rem 0 0.7rem;
+    font-weight: 600;
+  }
+  h4 {
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .section-sub { color: var(--muted); font-size: 0.95rem; max-width: 40em; }
+  p { margin: 0 0 1rem; max-width: 68ch; }
+  section > .section-head p { max-width: 60ch; }
+  ul, ol.plain { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: 0.4rem; max-width: 64ch; }
+  strong { font-weight: 700; }
+
+  /* ---------- pushback callouts ---------- */
+  .friction {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    background: var(--paper-card);
+    border-radius: 3px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.1rem;
+  }
+  .friction .f-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .friction .f-claim {
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    text-wrap: balance;
+  }
+  .friction p:last-child { margin-bottom: 0; }
+
+  /* ---------- tables ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; margin-bottom: 1.2rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 0.62rem 0.85rem; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+  thead th {
+    background: var(--paper-raised);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    position: sticky; top: 0;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--paper-raised); }
+  td.num, th.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .tag.hi { color: var(--good); border-color: var(--good); }
+  .tag.lo { color: var(--accent); border-color: var(--accent); }
+  .tag.mid { color: var(--warn); border-color: var(--warn); }
+  tr.risk td { color: var(--muted); }
+  tr.risk td:first-child { color: var(--accent); font-weight: 700; }
+
+  /* ---------- platform compare cards ---------- */
+  .platform-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.2rem; }
+  .platform-card { border: 1px solid var(--line); border-radius: 4px; padding: 1.1rem 1.2rem; background: var(--paper-card); }
+  .platform-card h4 { font-family: var(--font-mono); text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.7rem; }
+  .platform-card .stat { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-bottom: 0.15rem; }
+  .platform-card .stat-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.9rem; }
+  .platform-card .role { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+
+  /* ---------- pipeline diagram ---------- */
+  figure.pipeline {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper-card);
+    margin: 0 0 1.4rem;
+    overflow-x: auto;
+  }
+  figure.pipeline pre {
+    margin: 0;
+    padding: 1.4rem 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.85;
+    white-space: pre;
+  }
+  figure.pipeline .stage { color: var(--accent); font-weight: 700; }
+  figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 0.6rem 1.6rem 1rem;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  /* ---------- agent spec cards ---------- */
+  .stage-block { margin: 2.2rem 0 2.6rem; }
+  .stage-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent);
+    display: inline-block;
+    padding: 0.22rem 0.6rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+  .agent {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.15rem 1.3rem 1.3rem;
+    margin-bottom: 1rem;
+    background: var(--paper-card);
+  }
+  .agent.new { border-left: 3px solid var(--good); }
+  .agent-name { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.7rem; }
+  .agent-name h4 { margin: 0; font-size: 1rem; }
+  .badge-new {
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--good);
+    border: 1px solid var(--good);
+    padding: 0.05rem 0.4rem;
+    border-radius: 99px;
+  }
+  dl.spec { margin: 0; display: grid; grid-template-columns: 108px 1fr; gap: 0.35rem 0.9rem; }
+  dl.spec dt {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0.15rem;
+  }
+  dl.spec dd { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+  @media (max-width: 560px) {
+    dl.spec { grid-template-columns: 1fr; }
+    dl.spec dt { margin-top: 0.5rem; }
+  }
+
+  /* ---------- stack table ---------- */
+  .stack-layer { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+  /* ---------- roadmap ---------- */
+  .phase {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 1.4rem;
+    padding: 1.4rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .phase:last-child { border-bottom: 1px solid var(--line); }
+  .phase-when { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); }
+  .phase h4 { margin-bottom: 0.5rem; font-family: var(--font-display); font-size: 1.1rem; }
+  @media (max-width: 560px) {
+    .phase { grid-template-columns: 1fr; gap: 0.4rem; }
+  }
+
+  /* ---------- sources ---------- */
+  .source-group { margin-bottom: 1.4rem; }
+  .source-group h4 { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+  .source-group ul { list-style: none; padding: 0; margin: 0; }
+  .source-group li { font-size: 0.86rem; margin-bottom: 0.4rem; max-width: none; }
+
+  footer.doc-foot {
+    margin-top: 4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>
+
+<div class="shell">
+  <nav class="toc" aria-label="Table of contents">
+    <span class="toc-title">Contents</span>
+    <ol id="toc-list">
+      <li><a href="#pushback">0 · Pushback</a></li>
+      <li><a href="#research">1 · Platform research</a></li>
+      <li><a href="#comparison">1.4 · Comparison</a></li>
+      <li><a href="#content-types">2 · Winning format</a></li>
+      <li><a href="#niches">3 · 20 niches ranked</a></li>
+      <li><a href="#architecture">4 · Agent architecture</a></li>
+      <li><a href="#system">5 · System design</a></li>
+      <li><a href="#stack">6 · Stack</a></li>
+      <li><a href="#roadmap">7 · Roadmap</a></li>
+      <li><a href="#mvp">8 · Phase 1 MVP plan</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="doc-head">
+      <span class="eyebrow">Strategic &amp; Technical Blueprint</span>
+      <h1 class="title">Building an autonomous AI content studio</h1>
+      <p class="dek">A grounded plan for a research-driven, multi-agent video system aimed at YouTube, TikTok, and Instagram — where the honest reading of 2026 platform policy points, and where it doesn't.</p>
+      <div class="meta-row">
+        <span>Prepared 2026-07-14</span>
+        <span>Base: South Korea</span>
+        <span>Audience: Global / English</span>
+        <span>Status: Pre-build strategy</span>
+      </div>
+    </header>
+
+    <section id="pushback">
+      <div class="section-head">
+        <h2><span class="section-num">0</span>Where I'm pushing back before we design anything</h2>
+        <p class="section-sub">You asked me to challenge assumptions instead of agreeing. Five places the brief, taken literally, points at a worse outcome — backed by the research in Section 1, not vibes.</p>
+      </div>
+
+      <div class="friction">
+        <span class="f-label">Friction 01 · "Natural-looking" is the wrong target</span>
+        <p class="f-claim">Photorealism is a compliance liability, not a feature.</p>
+        <p>YouTube's disclosure rule triggers specifically when AI content <em>could be mistaken for real footage</em> — a synthetic human, an altered real event. The more "natural" your output looks, the more disclosure obligations and detection exposure you accumulate, for zero revenue upside. The actual top earners (Bright Side — 45M subs; DaFuq Boom — $500K–1.3M/mo; NexLev's court-case channels) aren't photoreal synthetic humans at all — they're narrated documentary and B-roll formats. Don't spend engineering effort chasing photorealism.</p>
+      </div>
+
+      <div class="friction">
+        <span class="f-label">Friction 02 · "Autonomous" is the disqualifying word</span>
+        <p class="f-claim">"Minimal human input" is YouTube's own language for what gets removed.</p>
+        <p>The inauthentic-content policy explicitly names "videos created entirely by bots, scripts, or software with minimal human input." January 2026 enforcement removed 16 channels in one sweep — 4.7B lifetime views, ~$10M/yr in ad revenue. A system whose explicit goal is zero human judgment is architecturally the thing enforcement is tuned to find. The fix isn't faking human involvement — it's making a real editorial decision a structural, auditable pipeline stage.</p>
+      </div>
+
+      <div class="friction">
+        <span class="f-label">Friction 03 · The three platforms are not equal legs of a stool</span>
+        <p class="f-claim">Instagram is currently the weakest fit for an AI-content strategy, by policy and by economics.</p>
+        <p>Instagram's own head of product stated in his 2026 memo that IG will prioritize "raw, real human content" over AI material this year. Reels reach is already down 31–35% YoY, and RPM tops out around $0.12/1000 views — the worst of the three by a wide margin. Treat YouTube as the revenue engine, TikTok as the distribution funnel, and deprioritize Instagram until the platform's own stated direction changes.</p>
+      </div>
+
+      <div class="friction">
+        <span class="f-label">Friction 04 · Cloning one pipeline across many channels is the tell</span>
+        <p class="f-claim">"20 channels, same template" is the exact network signature enforcement is built to catch.</p>
+        <p>A single-sweep removal of 16 channels implies cross-channel pattern detection is already live. The lesson isn't "don't scale channels" — it's that each channel needs a genuinely distinct editorial voice, research depth, and production pipeline, not a niche-swapped clone. This is a Phase 3 business decision, built into the roadmap rather than papered over in the architecture.</p>
+      </div>
+
+      <div class="friction">
+        <span class="f-label">Friction 05 · Video generation is not your moat</span>
+        <p class="f-claim">Sora 2 shipped and was fully deprecated about six months later.</p>
+        <p>Video-gen models are churning on a 3–6 month cycle. Treating "the video generation model" as core IP means building on the fastest-depreciating layer in the stack. The layer that doesn't commoditize is research, originality, and editorial judgment — deciding what's worth making and why it differs from the 500 other videos on the same topic. Video and voice generation should be swappable backends behind an interface, never a hard dependency.</p>
+      </div>
+    </section>
+
+    <section id="research">
+      <div class="section-head">
+        <h2><span class="section-num">1</span>Platform research — what's actually true right now</h2>
+      </div>
+
+      <h3>1.1 · YouTube Partner Program</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tier</th><th>Requirement</th></tr></thead>
+          <tbody>
+            <tr><td>Early access (fan funding)</td><td>500 subscribers + 3 public uploads in 90 days, and either 3,000 long-form watch hours in 365 days <em>or</em> 3M Shorts views in 90 days</td></tr>
+            <tr><td>Full monetization (ads)</td><td>1,000 subscribers + 4,000 watch hours in 12 months, <em>or</em> 1,000 subscribers + 10M Shorts views in 90 days</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>The policy that matters most: "inauthentic content"</strong> (renamed from "repetitious content," effective July 15 2025; first major enforcement wave January 2026).</p>
+      <ul>
+        <li>Defined as mass-produced or template-driven content with little to no variation — the test is whether videos are <strong>interchangeable with each other</strong>, not whether AI was used.</li>
+        <li>Named disqualifiers: bot/script-generated videos with minimal human input, auto-generated slideshows, verbatim TTS-over-stock-footage with no POV, bulk near-duplicates, uncommented compilations.</li>
+        <li>Enforcement: three strikes — warning → 90-day suspension → permanent removal. January 2026: 16 channels, 4.7B lifetime views, ~$10M/yr wiped in one sweep.</li>
+        <li><strong>What still monetizes fine:</strong> AI-assisted or AI-generated content with genuine original value — commentary, narrative structure, real editing choices — with the "Altered or synthetic content" toggle set when relevant. AI isn't the trigger; formulaic low-effort production is.</li>
+        <li>Reused-content policy is unchanged — commentary, clips, compilations, and reactions with real added value remain eligible.</li>
+        <li><strong>Limited-ads triggers:</strong> real people depicted without consent, medical/financial-advice framing, anything that could mislead about current events, generic TTS paired with copy-paste scripts.</li>
+        <li><strong>Copyright:</strong> pure AI output cannot be copyrighted (US Supreme Court declined <em>Thaler v. Perlmutter</em> cert, March 2026). Content wrapping AI elements in human-authored scripts and editing remains on solid ground.</li>
+      </ul>
+
+      <h3>1.2 · Instagram</h3>
+      <ul>
+        <li><strong>Ranking signals</strong> (Mosseri-confirmed): watch time (total time + replay rate) &gt; sends-per-reach (DM shares, worth 3–5× a like for new-audience reach) &gt; likes-per-reach (matters most with existing followers).</li>
+        <li><strong>Strategic pivot:</strong> IG's 2026 memo explicitly prioritizes "raw, real human content" over AI material. Reels reach fell 31–35% YoY (avg. 14,922 → 9,689). More posting volume made reach <em>worse</em> for tracked accounts — saturation is actively penalized.</li>
+        <li><strong>Originality penalty:</strong> original content gets 40–60% more distribution than reposts; 10+ reposts in 30 days = full exclusion from recommendations.</li>
+        <li><strong>Monetization:</strong> 55/45 creator/Meta split on Reels ads; Reels Play Bonus pays $0.03–$0.12/1000 views — the lowest RPM of the three platforms.</li>
+      </ul>
+
+      <h3>1.3 · TikTok</h3>
+      <ul>
+        <li><strong>Creator Rewards eligibility:</strong> 10,000 followers, 100,000 views in 30 days, 18+, good standing, original content only (no duets/stitches/reposts), videos ≥60s for the higher-paying tier.</li>
+        <li><strong>RPM:</strong> $0.40–$2.00/1000 qualified views, driven by originality, play duration, engagement, and "search value."</li>
+        <li><strong>Algorithm:</strong> completion rate is ~40–50% of ranking weight. The viral threshold moved from ~50% completion (2024) to over 70% in 2026 — below it, videos rarely clear 10K views; above it, distribution is close to unbounded.</li>
+        <li><strong>AI labeling:</strong> mandatory for realistic synthetic faces/voices/scenes, enforced via C2PA credentials plus detection (accuracy 18%→35–45%, 2024–2025). 1.3B videos already labeled — 52% of all TikTok content has some AI element, so <em>labeled</em> AI content is now normal, not penalized.</li>
+        <li><strong>Cadence:</strong> 1–4×/day; new accounts benefit from 2–3×/day; &gt;5/day shows diminishing returns.</li>
+      </ul>
+    </section>
+
+    <section id="comparison">
+      <div class="section-head">
+        <h2><span class="section-num">1.4</span>Platform comparison</h2>
+      </div>
+      <div class="platform-grid">
+        <div class="platform-card">
+          <h4>YouTube · long-form</h4>
+          <div class="stat">$7–25</div>
+          <div class="stat-label">RPM ceiling (up to $25+ finance/legal)</div>
+          <div class="role">Primary revenue engine</div>
+        </div>
+        <div class="platform-card">
+          <h4>TikTok</h4>
+          <div class="stat">$0.40–2</div>
+          <div class="stat-label">RPM per 1,000 views</div>
+          <div class="role">Distribution / funnel</div>
+        </div>
+        <div class="platform-card">
+          <h4>Instagram Reels</h4>
+          <div class="stat">$0.01–0.12</div>
+          <div class="stat-label">RPM per 1,000 views</div>
+          <div class="role">Deprioritized / future</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Factor</th><th>YouTube</th><th>TikTok</th><th>Instagram Reels</th></tr></thead>
+          <tbody>
+            <tr><td>AI-content stance, 2026</td><td>Tolerant if original value; aggressive enforcement on templated content</td><td>Tolerant if labeled + retention holds</td><td>Actively de-prioritizing AI content</td></tr>
+            <tr><td>Reach trend</td><td>Stable/growing for quality long-form</td><td>Strong, algorithm-driven</td><td>Declining 31–35% YoY</td></tr>
+            <tr><td>Automation-friendliness</td><td>High (cheap API); policy risk on templating</td><td>Medium (labeling overhead)</td><td>Low (repost penalties, human-content bias)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="content-types">
+      <div class="section-head">
+        <h2><span class="section-num">2</span>Which content type wins on all four axes</h2>
+        <p class="section-sub">Not a hedge — a ranked answer.</p>
+      </div>
+      <ol class="plain">
+        <li><strong>Highest overall (viral + monetized + scalable + durable):</strong> narrated, research-backed long-form documentary/story format (8–15 min) on YouTube, repurposed into short-form cuts for TikTok/Shorts. This is the pattern behind every large faceless-channel success case in the research — long watch time in premium-CPM categories, genuine research/POV as the durability moat, and natural sliceability into short-form without separate production.</li>
+        <li><strong>Highest pure virality, weakest monetization:</strong> hook-driven 15–45s vertical clips. Necessary for discovery, structurally low RPM — top-of-funnel that feeds subscribers to the long-form channel, not a revenue line itself.</li>
+        <li><strong>Highest automation ease, lowest durability:</strong> templated compilation/listicle/quote content. Cheapest to produce, but this is precisely the shape named in YouTube's inauthentic-content examples. Don't build the MVP around it despite the easy-win appearance.</li>
+        <li><strong>Worst risk-adjusted bet:</strong> photorealistic synthetic-human "AI influencer" talking-head content. Highest production complexity, highest disclosure/detection exposure, actively penalized by Instagram's 2026 stance — and not what actual top earners are doing. Skip it.</li>
+      </ol>
+    </section>
+
+    <section id="niches">
+      <div class="section-head">
+        <h2><span class="section-num">3</span>20 content niches, ranked</h2>
+        <p class="section-sub">Competition and automation difficulty: lower is better. CPM/RPM, viral potential, and sustainability: higher is better.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="num">#</th><th>Niche</th><th>Competition</th><th>CPM / RPM</th><th>Viral potential</th><th>Automation difficulty</th><th>Sustainability</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Personal finance / investing explainers</td><td><span class="tag mid">High</span></td><td><span class="tag hi">$15–50 CPM</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">2</td><td>True crime / court case narration</td><td><span class="tag mid">Med-High</span></td><td><span class="tag hi">High</span></td><td><span class="tag hi">High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">3</td><td>History deep-dives / "what if" scenarios</td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">Very high</span></td></tr>
+            <tr><td class="num">4</td><td>Legal case breakdowns</td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td><td><span class="tag hi">High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">5</td><td>Reddit story narration (betrayal / revenge)</td><td><span class="tag mid">High</span></td><td><span class="tag hi">$12.82 RPM</span></td><td><span class="tag hi">Very high</span></td><td><span class="tag hi">Low</span></td><td><span class="tag mid">Medium</span></td></tr>
+            <tr><td class="num">6</td><td>AI tools &amp; productivity news</td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">$10–25</span></td><td><span class="tag hi">High</span></td><td><span class="tag hi">Low</span></td><td><span class="tag mid">Medium</span></td></tr>
+            <tr><td class="num">7</td><td>Real estate &amp; wealth-building</td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td><td><span class="tag mid">Low-Med</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">8</td><td>Psychology &amp; self-improvement</td><td><span class="tag mid">High</span></td><td><span class="tag mid">Med-High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">9</td><td>Cybersecurity / scam awareness</td><td><span class="tag hi">Low-Med</span></td><td><span class="tag mid">Med-High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">10</td><td>Health &amp; longevity science</td><td><span class="tag mid">Med-High</span></td><td><span class="tag hi">High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag lo">High</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">11</td><td>B2B SaaS / tech explainers</td><td><span class="tag hi">Low</span></td><td><span class="tag hi">High</span></td><td><span class="tag lo">Low</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">12</td><td>English / language learning content</td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">$11.88 RPM</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">Low</span></td><td><span class="tag hi">Very high</span></td></tr>
+            <tr><td class="num">13</td><td>Space &amp; science documentaries</td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Med-High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">Very high</span></td></tr>
+            <tr><td class="num">14</td><td>Biography / "life story of X"</td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">15</td><td>Mythology &amp; folklore storytelling</td><td><span class="tag hi">Low-Med</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">Low</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">16</td><td>Sports history / documentary</td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag hi">High</span></td></tr>
+            <tr><td class="num">17</td><td>Product review / gadget explainers</td><td><span class="tag mid">High</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Medium</span></td><td><span class="tag lo">High</span></td><td><span class="tag mid">Medium</span></td></tr>
+            <tr><td class="num">18</td><td>Kids / family animated stories</td><td><span class="tag lo">Very high</span></td><td><span class="tag mid">Medium (COPPA)</span></td><td><span class="tag hi">High</span></td><td><span class="tag lo">High</span></td><td><span class="tag mid">Medium</span></td></tr>
+            <tr class="risk"><td class="num">19</td><td>Conspiracy-adjacent mystery / unsolved</td><td><span class="tag mid">Medium</span></td><td><span class="tag mid">Low-Med</span></td><td><span class="tag hi">High</span></td><td><span class="tag hi">Low</span></td><td><span class="tag lo">Low — avoid as primary niche</span></td></tr>
+            <tr class="risk"><td class="num">20</td><td>Motivational / quote compilations</td><td><span class="tag lo">Very high</span></td><td><span class="tag lo">Low</span></td><td><span class="tag mid">Low</span></td><td><span class="tag hi">Very low</span></td><td><span class="tag lo">Very low — matches the policy's own template example</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>MVP recommendation:</strong> #1 (finance), #2/#4 (true crime / legal), or #12 (English learning) — pick by your own domain fluency, since the fact-checking and originality layer is the moat and works best where you can personally sanity-check output early on.</p>
+    </section>
+
+    <section id="architecture">
+      <div class="section-head">
+        <h2><span class="section-num">4</span>Multi-agent architecture</h2>
+        <p class="section-sub">Research, originality, and compliance are first-class pipeline stages, not afterthoughts. Video and voice generation are swappable backends. There is always at least one genuine judgment checkpoint before publish.</p>
+      </div>
+
+      <figure class="pipeline">
+        <pre><span class="stage">STRATEGY</span>        Trend Research → Competitor Intelligence → Portfolio Strategy
+                        │
+<span class="stage">RESEARCH</span>        Deep Research → Fact Checker → Originality &amp; Angle
+                        │
+<span class="stage">CREATION</span>        Script Writer → Storytelling Structure → SEO/Metadata → Thumbnail
+                        │
+<span class="stage">HUMANIZATION</span>    Humanization &amp; Voice-Style
+                        │
+<span class="stage">PRODUCTION</span>      Voice Synthesis → Video/Visual Generation → Sound Design
+                    → Video Assembly → Subtitle/Caption
+                        │
+<span class="stage">QA / COMPLIANCE</span> Quality Review → Copyright/Content-ID Risk → Policy/Monetization Compliance
+                        │
+<span class="stage">DISTRIBUTION</span>    Cross-Platform Repurposing → Publishing/Scheduling
+                        │
+<span class="stage">GROWTH LOOP</span>     Analytics → A/B Testing → Learning/Optimization  ──▶ feeds back to Strategy</pre>
+        <figcaption>Owned end-to-end by a Supervisor/Orchestrator agent — a Temporal workflow wrapping a LangGraph state graph, handling retries, conditional branching, and the human-approval wait at MVP stage.</figcaption>
+      </figure>
+
+      <div class="stage-block">
+        <span class="stage-label">Strategy layer</span>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Trend Research Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Platform trend APIs, Google Trends, competitor pulls, Reddit thread signals</dd>
+            <dt>Outputs</dt><dd>Ranked candidate topics with a novelty score and projected-CPM niche tag</dd>
+            <dt>Prompt strategy</dt><dd>Structured extraction, not open generation — forces citation of the specific signal behind each candidate</dd>
+            <dt>Memory</dt><dd>Rolling 90-day vector store of past-covered topics — prevents re-covering the same angle</dd>
+            <dt>Tools</dt><dd>YouTube Data API, Google Trends API, Exa/Tavily, Reddit API (PRAW), SerpAPI</dd>
+            <dt>Decision logic</dt><dd>Rejects any topic &gt;0.85 cosine similarity to something published in the last 90 days unless a genuinely new angle is proposed</dd>
+            <dt>Failure handling</dt><dd>If all candidates fail the novelty threshold, escalates to Portfolio Strategy rather than forcing a low-quality pick</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Competitor Intelligence Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Channel list per niche; recent uploads (title/thumbnail/transcript/view velocity)</dd>
+            <dt>Outputs</dt><dd>Gap analysis — what's covered, saturated, or under-served</dd>
+            <dt>Tools</dt><dd>YouTube Data API, transcript extraction, vision model for thumbnail pattern analysis</dd>
+            <dt>Memory</dt><dd>Per-competitor embedding history to detect niche crowding</dd>
+            <dt>Failure handling</dt><dd>Stale/rate-limited API falls back to cached data with an explicit staleness flag — never silently served as fresh</dd>
+          </dl>
+        </div>
+
+        <div class="agent new">
+          <div class="agent-name"><h4>Portfolio Strategy Agent</h4><span class="badge-new">New</span></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Trend + Competitor outputs, current per-channel performance, channel/niche map</dd>
+            <dt>Outputs</dt><dd>Which channel (or new channel) a topic routes to, with explicit instruction to vary production style for a second+ channel in a niche cluster</dd>
+            <dt>Decision logic</dt><dd>Structurally enforces "don't clone the same template across channels" — will not route two channels to identical script/voice/pacing configs</dd>
+            <dt>Failure handling</dt><dd>If no channel fits and a new one isn't justified by data, defers the topic rather than force-fitting it</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="stage-block">
+        <span class="stage-label">Research layer</span>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Deep Research Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Selected topic from the Strategy layer</dd>
+            <dt>Outputs</dt><dd>Structured research brief — claims, sources, counterpoints, an explicit "why this angle, why now" thesis</dd>
+            <dt>Prompt strategy</dt><dd>Two-pass: gather, then a dedicated pass instructed to find disconfirming evidence</dd>
+            <dt>Tools</dt><dd>Exa/Tavily/Perplexity API, primary-source fetch, Reddit/forum sentiment</dd>
+            <dt>Memory</dt><dd>Citation store in the vector DB, reusable across related future topics</dd>
+            <dt>Failure handling</dt><dd>Low source count/diversity routes to Fact Checker with a low-confidence flag rather than proceeding silently</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Fact Checker Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Research brief + draft script (runs pre- and post-script)</dd>
+            <dt>Outputs</dt><dd>Per-claim verdict — verified / disputed / unverifiable — with sources</dd>
+            <dt>Decision logic</dt><dd>Any disputed/unverifiable claim tied to medical, financial, legal advice, or real-person allegations is a hard stop, not a warning</dd>
+            <dt>Failure handling</dt><dd>Search-tool failure never defaults to "assume true" — pipeline pauses and escalates</dd>
+          </dl>
+        </div>
+
+        <div class="agent new">
+          <div class="agent-name"><h4>Originality &amp; Angle Agent</h4><span class="badge-new">New</span></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Draft script, Trend Research's novelty score, full corpus of the channel's own past scripts</dd>
+            <dt>Outputs</dt><dd>Pass/fail plus a rewrite directive if the script structurally resembles prior output</dd>
+            <dt>Decision logic</dt><dd>Modeled directly on YouTube's "interchangeable content" test — checks structural similarity, not just topic</dd>
+            <dt>Memory</dt><dd>Embeddings of full script structure (not just topic) across channel history</dd>
+            <dt>Failure handling</dt><dd>On failure, forces a human-review flag — this agent is not allowed to fail open</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="stage-block">
+        <span class="stage-label">Creation layer</span>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Script Writer Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Approved research brief</dd>
+            <dt>Outputs</dt><dd>Full narration script with scene/beat markers</dd>
+            <dt>Prompt strategy</dt><dd>Constrained to the Storytelling Agent's structure, required to vary rhythm/phrasing per the Humanization Agent's style guide</dd>
+            <dt>Memory</dt><dd>Channel voice/style guide</dd>
+            <dt>Tools</dt><dd>Claude Opus (best factual-grounding benchmark)</dd>
+            <dt>Failure handling</dt><dd>Words-per-minute/pacing check before handoff; auto-retry with explicit trim/expand instruction</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Storytelling / Narrative Structure Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Research brief</dd>
+            <dt>Outputs</dt><dd>Beat sheet — hook → stakes → escalation → payoff — decoupled from prose so structure and copy vary independently</dd>
+            <dt>Decision logic</dt><dd>Enforces a strong-hook-in-first-8-seconds rule, mapped directly from TikTok's 70%-completion retention data</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>SEO &amp; Metadata Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Final script, competitor title/tag data</dd>
+            <dt>Outputs</dt><dd>Title variants, description, tags, chapters</dd>
+            <dt>Tools</dt><dd>YouTube Data API for competitor SERP data</dd>
+            <dt>Decision logic</dt><dd>Rejects clickbait-mismatch titles — claims unsupported by the fact-checked script are both an ethics and a policy-risk gate</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Thumbnail Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Script beats, channel style guide</dd>
+            <dt>Outputs</dt><dd>3–5 thumbnail candidates</dd>
+            <dt>Tools</dt><dd>Image-gen model + vision-model self-critique (contrast, face-size, small-scale legibility)</dd>
+            <dt>Memory</dt><dd>Past thumbnail CTR feeds back into style weighting</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Humanization &amp; Voice-Style Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Draft script</dd>
+            <dt>Outputs</dt><dd>Edited script with deliberate personality/varied cadence — not to evade detection, but to actually not be formulaic, the real policy target</dd>
+            <dt>Decision logic</dt><dd>Varies opening lines, transitions, and pacing against a rotating template pool — intentionally adversarial with the Originality Agent's similarity check</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="stage-block">
+        <span class="stage-label">Production layer</span>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Voice Synthesis Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Final script</dd>
+            <dt>Outputs</dt><dd>Timed audio track</dd>
+            <dt>Tools</dt><dd>ElevenLabs primary; Fish Audio / Chatterbox fallback</dd>
+            <dt>Decision logic</dt><dd>Rotates among a licensed voice pool per channel — never one static voice reused verbatim everywhere</dd>
+            <dt>Failure handling</dt><dd>Vendor outage/quota falls back to secondary TTS, flags the substitution for review</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Video / Visual Generation Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Scene list from the script</dd>
+            <dt>Outputs</dt><dd>B-roll clips, motion graphics, stock-footage matches</dd>
+            <dt>Tools</dt><dd>Vendor-agnostic interface over Veo 3.1 (hero shots) and Kling 3.0 (cheap bulk B-roll) — abstracted specifically because Sora 2 was deprecated ~6 months after launch</dd>
+            <dt>Decision logic</dt><dd>Routes shot complexity/importance to the appropriate cost tier</dd>
+          </dl>
+        </div>
+
+        <div class="agent new">
+          <div class="agent-name"><h4>Sound Design Agent</h4><span class="badge-new">New</span></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Assembled scene timeline</dd>
+            <dt>Outputs</dt><dd>Music bed + SFX layer</dd>
+            <dt>Tools</dt><dd>Licensed music API + Claude for mood-matching to scene beats</dd>
+            <dt>Decision logic</dt><dd>Flags any 20+ second stretch with no audio variation as a retention risk before it reaches QA</dd>
+          </dl>
+        </div>
+
+        <div class="agent new">
+          <div class="agent-name"><h4>Video Assembly / Editor Agent</h4><span class="badge-new">New</span></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Voice track, visuals, sound design, subtitle timing</dd>
+            <dt>Outputs</dt><dd>Assembled cut</dd>
+            <dt>Tools</dt><dd>ffmpeg + Remotion (code-driven assembly)</dd>
+            <dt>Decision logic</dt><dd>Enforces pacing rules from TikTok retention data — cut frequency, no dead air &gt;3s, hook lands in the first 8s, even on long-form cuts</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Subtitle / Caption Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Audio track</dd>
+            <dt>Outputs</dt><dd>Burned-in + soft-sub caption files per platform</dd>
+            <dt>Tools</dt><dd>WhisperX / Deepgram forced alignment</dd>
+            <dt>Failure handling</dt><dd>Word-error-rate check against the source script; above threshold routes to manual correction, not auto-publish</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="stage-block">
+        <span class="stage-label">QA / compliance layer</span>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Quality Review Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Assembled video + all upstream artifacts</dd>
+            <dt>Outputs</dt><dd>Pass/fail + annotated issue list</dd>
+            <dt>Decision logic</dt><dd>LLM-as-judge (Gemini 3.1 Pro, native video understanding) against a pacing/consistency/sync/style rubric</dd>
+            <dt>Failure handling</dt><dd><strong>This is the MVP-stage human-in-the-loop gate</strong> — the auto-pass threshold starts high and loosens only as track record accumulates</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Copyright / Content-ID Risk Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>All visual/audio assets</dd>
+            <dt>Outputs</dt><dd>Risk score per asset</dd>
+            <dt>Tools</dt><dd>Reverse-image/audio fingerprint checks, music licensing verification</dd>
+            <dt>Decision logic</dt><dd>Hard block on real-person likeness without clear parody/commentary framing or consent — modeled on the Screen Culture / KH Studio demonetization case</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Policy / Monetization Compliance Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Final video + metadata + all upstream agent decision logs</dd>
+            <dt>Outputs</dt><dd>Monetization-risk verdict mapped to YouTube's named categories — inauthentic, reused, low-value, limited-ads</dd>
+            <dt>Decision logic</dt><dd>Prompt built from YouTube's own policy language as a structured rubric, not a vibe check — including whether the synthetic-content disclosure toggle should be set</dd>
+            <dt>Memory</dt><dd>Running decision log — the evidentiary trail that shows genuine editorial process if a channel is ever audited or appealed</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="stage-block">
+        <span class="stage-label">Distribution layer</span>
+
+        <div class="agent new">
+          <div class="agent-name"><h4>Cross-Platform Repurposing Agent</h4><span class="badge-new">New</span></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Long-form final cut + transcript</dd>
+            <dt>Outputs</dt><dd>3–6 short-form clips per video, reformatted per platform (9:16, caption style, hook-first trim)</dd>
+            <dt>Decision logic</dt><dd>Selects clip boundaries from the long-form retention curve — cuts where retention peaks, not arbitrary timestamps</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Publishing / Scheduling Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Final assets per platform</dd>
+            <dt>Outputs</dt><dd>Scheduled/published posts</dd>
+            <dt>Tools</dt><dd>YouTube Data API v3 and TikTok Content Posting API preferred; Playwright/browser-use only as a fallback, never the primary write path</dd>
+            <dt>Decision logic</dt><dd>Staggers cross-platform posting and randomizes windows within a target range rather than a fixed cron minute — rigid timing is itself a template signal</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="stage-block">
+        <span class="stage-label">Growth loop</span>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Analytics Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>YouTube/TikTok/IG analytics APIs</dd>
+            <dt>Outputs</dt><dd>Structured performance data joined back to the video's full agent-decision trail</dd>
+          </dl>
+        </div>
+
+        <div class="agent new">
+          <div class="agent-name"><h4>A/B Testing Agent</h4><span class="badge-new">New</span></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Thumbnail/title variant sets</dd>
+            <dt>Outputs</dt><dd>Statistically-gated winner selection, using native platform A/B tooling where available</dd>
+          </dl>
+        </div>
+
+        <div class="agent">
+          <div class="agent-name"><h4>Learning / Optimization Agent</h4></div>
+          <dl class="spec">
+            <dt>Inputs</dt><dd>Analytics + A/B results over a rolling window</dd>
+            <dt>Outputs</dt><dd>Prompt/weight adjustments fed back to Strategy- and Creation-layer agents</dd>
+            <dt>Decision logic</dt><dd>Requires a minimum sample size before acting — guards against overfitting to noise on a small channel</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section id="system">
+      <div class="section-head">
+        <h2><span class="section-num">5</span>System design</h2>
+      </div>
+
+      <h3>5.1 · Orchestration &amp; durability</h3>
+      <p><strong>LangGraph</strong> as the agent state machine — checkpointing, typed state, human-in-the-loop interrupts, in production at Klarna, Uber, and LinkedIn. Each agent above is a node; conditional edges implement the retry/escalation logic in its spec.</p>
+      <p><strong>Temporal</strong> wraps the whole per-video pipeline — a video's lifecycle spans hours to days, must survive restarts, and must wait on human-approval signals without holding compute. Lightweight, independent fan-out jobs (e.g. five thumbnail variants in parallel) go through a simple Redis+BullMQ queue instead — don't over-engineer the small stuff.</p>
+
+      <h3>5.2 · Data layer</h3>
+      <p><strong>Postgres</strong> (Neon or Supabase) for channels, videos, agent run logs, decision audit trail, performance metrics — the audit trail is concrete insurance if a channel is ever flagged. <strong>Qdrant</strong>, self-hosted, for script-structure embeddings, research citations, competitor content, and comment sentiment — chosen over Pinecone because at single-operator scale, self-hosted cost and native hybrid search beat paying for managed simplicity you don't need yet. <strong>Cloudflare R2</strong> for video/audio assets — S3-compatible with zero egress fees.</p>
+
+      <h3>5.3 · LLM routing</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task class</th><th>Model</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Script writing, fact-checking, compliance judgment, originality scoring</td><td>Claude Opus 4.8</td><td>Best human-preference/factual-grounding ranking</td></tr>
+            <tr><td>Bulk trend/competitor summarization, video understanding, long-context</td><td>Gemini 3.1 Pro</td><td>~7× cheaper per request, native video understanding</td></tr>
+            <tr><td>Agentic/tool-use heavy steps (browser reasoning, multi-step orchestration)</td><td>GPT-5.5</td><td>Leads CLI/agentic-autonomy benchmarks</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Route each task to its best-and-cheapest fit rather than committing to one vendor — this is also the primary cost control: reserve the expensive model for the handful of steps where judgment quality directly protects monetization (Fact Checker, Originality Agent, Compliance Agent).</p>
+
+      <h3>5.4 · Media models</h3>
+      <p><strong>Video:</strong> Veo 3.1 (hero shots, native 48kHz audio, strongest prompt adherence) + Kling 3.0 (bulk B-roll at ~$0.10/s, multilingual lip-sync for future dubbing) — behind a vendor-agnostic interface. <strong>Voice:</strong> ElevenLabs primary, Fish Audio / Chatterbox as an open-source cost fallback that beat ElevenLabs in blind tests. <strong>Vision/OCR:</strong> Gemini 3.1 Pro vision for thumbnail QA and competitor pattern analysis; dedicated OCR for on-screen text and subtitle burn-in verification. <strong>Alignment:</strong> WhisperX or Deepgram for forced word-level timing.</p>
+
+      <h3>5.5 · Search &amp; browser automation</h3>
+      <p>YouTube Data API v3, Google Trends API, Exa/Tavily, Reddit API (PRAW), SerpAPI cover trend/competitor/research needs. Playwright is the base automation layer; browser-use (~89% success on WebVoyager) handles read-only competitive intelligence without clean APIs. <strong>Primary publishing stays on official APIs</strong> — YouTube's upload quota cost dropped ~16× in December 2025, and write-path browser automation is both more fragile and more ToS-exposed than a sanctioned API call.</p>
+
+      <h3>5.6 · Cost optimization</h3>
+      <ul>
+        <li>Prompt caching on Claude/Gemini for repeated system prompts and style guides</li>
+        <li>Tiered LLM and video-gen routing — cheap/bulk model for drafts, premium model only where judgment protects revenue</li>
+        <li>Self-hosted open-source TTS fallback to cap voice cost without sacrificing the quality bar on flagship content</li>
+        <li>Batched video-gen requests and B-roll reuse across topically-related videos rather than regenerating near-identical shots</li>
+      </ul>
+    </section>
+
+    <section id="stack">
+      <div class="section-head">
+        <h2><span class="section-num">6</span>Recommended stack</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layer</th><th>Choice</th><th>Rationale</th></tr></thead>
+          <tbody>
+            <tr><td class="stack-layer">Agent orchestration</td><td>LangGraph (Python)</td><td>Production default; checkpointing, human-in-loop interrupts</td></tr>
+            <tr><td class="stack-layer">Durable workflow</td><td>Temporal</td><td>Multi-day durability, signal-based approval, retries</td></tr>
+            <tr><td class="stack-layer">Light job queue</td><td>Redis + BullMQ</td><td>Small stateless fan-out jobs only</td></tr>
+            <tr><td class="stack-layer">Primary database</td><td>Postgres (Neon/Supabase)</td><td>Relational integrity for the audit trail + metrics</td></tr>
+            <tr><td class="stack-layer">Vector database</td><td>Qdrant (self-hosted)</td><td>Fastest OSS option, native hybrid search, cost control at this scale</td></tr>
+            <tr><td class="stack-layer">Object storage</td><td>Cloudflare R2</td><td>S3-compatible, zero egress fees</td></tr>
+            <tr><td class="stack-layer">LLMs</td><td>Claude Opus 4.8 / Gemini 3.1 Pro / GPT-5.5</td><td>Routed by task — best-fit beats single-vendor lock-in</td></tr>
+            <tr><td class="stack-layer">Video generation</td><td>Veo 3.1 + Kling 3.0</td><td>Quality/cost tiering behind an abstraction, vendor-churn protection</td></tr>
+            <tr><td class="stack-layer">Voice</td><td>ElevenLabs + Fish Audio/Chatterbox</td><td>Quality primary, cost fallback</td></tr>
+            <tr><td class="stack-layer">Subtitles</td><td>WhisperX / Deepgram</td><td>Forced alignment accuracy</td></tr>
+            <tr><td class="stack-layer">Video assembly</td><td>ffmpeg + Remotion</td><td>Code-driven, fits a full-stack skillset</td></tr>
+            <tr><td class="stack-layer">Search/research</td><td>YouTube Data API, Google Trends, Exa/Tavily, Reddit API, SerpAPI</td><td>Covers trend/competitor/research needs</td></tr>
+            <tr><td class="stack-layer">Browser automation</td><td>Playwright + browser-use (fallback)</td><td>Reliability-first; APIs preferred for writes</td></tr>
+            <tr><td class="stack-layer">Agent observability</td><td>LangSmith or Langfuse</td><td>Traces every agent decision — doubles as compliance audit trail</td></tr>
+            <tr><td class="stack-layer">App monitoring</td><td>Sentry + Grafana/Prometheus</td><td>Standard</td></tr>
+            <tr><td class="stack-layer">Ops dashboard</td><td>Next.js + shadcn/ui</td><td>Fastest to build on an existing full-stack skillset</td></tr>
+            <tr><td class="stack-layer">Deployment</td><td>Docker Compose → single VPS (Hetzner/Fly.io)</td><td>No Kubernetes for a one-operator system; revisit at genuine multi-tenant scale</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="section-head">
+        <h2><span class="section-num">7</span>Roadmap</h2>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when">Months 0–3</div>
+        <div>
+          <h4>Phase 1 — MVP</h4>
+          <p>Single channel, one niche chosen by your own domain fluency (finance, true-crime/legal, or English-learning). The pipeline runs with a <strong>mandatory human approval gate</strong> at Quality Review and Compliance — deliberately not fully autonomous yet. Core agents only: Trend Research, Deep Research, Fact Checker, Originality &amp; Angle, Script Writer, Voice Synthesis, Video Generation (Kling only, cheap), Video Assembly, Subtitle, Quality Review, Compliance, Publishing (YouTube only). Stack: LangGraph + Postgres + Claude + ElevenLabs + Kling + ffmpeg, single VPS. Target: 2–3 videos/week, reach Tier-1 YPP eligibility, validate the format against real audience response before adding automation surface area.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when">Months 3–6</div>
+        <div>
+          <h4>Phase 2 — Autonomy + distribution</h4>
+          <p>Loosen the human-approval threshold based on the Quality Review Agent's tracked false-pass rate — never on a hunch. Add Storytelling Structure, SEO/Metadata, Thumbnail, Humanization, Sound Design, Cross-Platform Repurposing, Analytics, A/B Testing. Add TikTok as a distribution channel; hold Instagram per Friction 03. Introduce full LLM tiered routing and Temporal for durable multi-day workflows. Target: 5–7 videos/week long-form plus daily short-form repurposing.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when">Months 6–12</div>
+        <div>
+          <h4>Phase 3 — Multi-channel scale</h4>
+          <p>Add Competitor Intelligence, Portfolio Strategy, Learning/Optimization, Copyright/Content-ID Risk. Expand to 2–4 channels with <strong>deliberately differentiated</strong> production pipelines per Friction 04 — different niches, voices, editing styles, cadence, never a template clone. Reduce human-sampling rate as the Compliance Agent's audit trail builds a track record. Add cost-optimization routing once volume justifies the engineering time.</p>
+        </div>
+      </div>
+
+      <div class="phase">
+        <div class="phase-when">12+ months</div>
+        <div>
+          <h4>Phase 4 — Production-grade content company</h4>
+          <p>Full Portfolio Strategy-driven niche allocation across N channels. Multi-language dubbing (Kling multilingual lip-sync, Chatterbox 23-language cloning) for international expansion beyond English. Revisit Instagram only if its stated direction shifts, or as its own dedicated, genuinely non-automated-feeling workstream. Productizing the platform for other creators is a natural extension here — not a requirement, given the "not for public users yet" starting point.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="mvp">
+      <div class="section-head">
+        <h2><span class="section-num">8</span>Phase 1 MVP — concrete build plan</h2>
+        <p class="section-sub">The niche pick from Section 3, made concrete: a specific channel angle, an agent list tailored to what this niche actually needs, and a day-by-day first week.</p>
+      </div>
+
+      <h3>Channel angle &amp; identity</h3>
+      <div class="friction">
+        <span class="f-label">Format thesis</span>
+        <p class="f-claim">"The Turning Point"</p>
+        <p>Each video reconstructs a closed court case in strict chronological order from public record, built around the single piece of evidence, testimony, or decision that flipped the outcome — teased in the cold open, earned by the reconstruction, paid off at the verdict.</p>
+      </div>
+      <p>Why this specific angle instead of a generic "true crime channel":</p>
+      <ul>
+        <li>Gives the Storytelling Agent a genuine, non-templated hook mechanism instead of a generic "here's a crime" open.</li>
+        <li>Gives the Fact Checker a well-defined sourcing discipline — trial transcripts, appellate opinions, court filings, contemporaneous news — not tabloid recaps.</li>
+        <li>Naturally produces topic variety (jurisdictions, eras, evidence types) for the Originality Agent to work with, instead of one repeatable template.</li>
+        <li>Constrained to closed cases only (verdict already on public record) — sidesteps defamation exposure and the "misleading about current events" Limited-Ads trigger that live cases carry.</li>
+      </ul>
+      <p><strong>Working name: "The Turning Point."</strong> Backups if taken: "Verdict Line," "The Record."</p>
+
+      <h3>Cut-down agent list for this niche</h3>
+      <p>Two changes from the generic Phase 1 list in Section 7, both niche-specific: <strong>Storytelling Structure is pulled forward from Phase 2</strong> — the beat sheet <em>is</em> the format's identity here, not a Phase 2 nicety — and <strong>Copyright/Content-ID risk is folded into Compliance as a checklist</strong> rather than deferred to Phase 3, since real names, mugshots, and archival news footage are the core asset type in this niche.</p>
+      <ol class="plain">
+        <li><strong>Case Sourcing</strong> (Trend Research, retargeted — see below)</li>
+        <li><strong>Deep Research</strong></li>
+        <li><strong>Fact Checker</strong></li>
+        <li><strong>Originality &amp; Angle</strong></li>
+        <li><strong>Storytelling Structure</strong></li>
+        <li><strong>Script Writer</strong></li>
+        <li><strong>Voice Synthesis</strong></li>
+        <li><strong>Video Generation</strong> (Kling only)</li>
+        <li><strong>Video Assembly</strong></li>
+        <li><strong>Subtitle</strong></li>
+        <li><strong>Quality Review</strong> (human gate)</li>
+        <li><strong>Compliance</strong> (policy rubric + real-person/copyright checklist)</li>
+        <li><strong>Publishing</strong> (YouTube only — manual upload in week 1)</li>
+      </ol>
+      <p><strong>Case Sourcing retargeting:</strong> closed cases aren't trend-driven the way news is, so this agent isn't chasing Google Trends in week 1 — it's building and scoring a curated backlog. Tools: CourtListener/public court-record APIs, a Wikipedia "notable court cases" category crawl, news-archive search for cases with an anniversary or pop-culture reference reviving interest. Output: a scored backlog of 30+ candidate cases before automation is worth building on top of it.</p>
+
+      <h3>First week — build order</h3>
+      <p>Goal for the week: <strong>one full manually-run video, published, with every pipeline stage exercised at least once.</strong> Not automation — proof the chain works end to end.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="num">Day</th><th>Build</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Infra: repo scaffold, Postgres schema (channels / videos / agent_runs / decisions), LangGraph skeleton, secrets (Claude, ElevenLabs, Kling, YouTube OAuth), Cloudflare R2 bucket</td></tr>
+            <tr><td class="num">2</td><td>Case Sourcing backlog (30 candidate cases, manually seeded + scored) + Deep Research agent producing a structured brief on case #1</td></tr>
+            <tr><td class="num">3</td><td>Fact Checker (claim-verification loop against the brief) + Originality &amp; Angle (wire the embedding pipeline now, even against an empty corpus — it needs to exist before video #2)</td></tr>
+            <tr><td class="num">4</td><td>Storytelling Structure (Turning-Point beat sheet template) + Script Writer, with WPM/pacing validation</td></tr>
+            <tr><td class="num">5</td><td>Voice Synthesis (ElevenLabs) → Video Generation (Kling, B-roll only) → Video Assembly (ffmpeg/Remotion) → Subtitle, all writing to R2</td></tr>
+            <tr><td class="num">6</td><td>Quality Review (you, watching it against the rubric) + Compliance checklist pass; fix whatever the first full run exposes</td></tr>
+            <tr><td class="num">7</td><td>Publish video #1 <strong>manually</strong> through YouTube Studio, not the API yet — validate the human workflow and the video itself before automating the write path. Write down every step that broke or felt fragile; that list becomes week 2's priority order, not a pre-written plan</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Deliberately <strong>not</strong> in week 1: TikTok repurposing, multi-model LLM routing, Temporal (a single manual LangGraph run doesn't need durable workflow yet), a second case in flight simultaneously. One case, one full pass, end to end — the point is finding out where the pipeline actually breaks before adding volume.</p>
+    </section>
+
+    <section id="sources">
+      <div class="section-head">
+        <h2>Sources</h2>
+      </div>
+
+      <div class="source-group">
+        <h4>YouTube policy</h4>
+        <ul>
+          <li><a href="https://flocker.tv/posts/youtube-inauthentic-content-ai-enforcement/">YouTube Inauthentic Content Policy: AI Enforcement Wave 2026</a></li>
+          <li><a href="https://support.google.com/youtube/answer/1311392?hl=en">YouTube channel monetization policies — YouTube Help</a></li>
+          <li><a href="https://www.searchenginejournal.com/youtube-targets-mass-produced-content-in-monetization-update/550337/">YouTube Targets Mass-Produced Content in Monetization Update</a></li>
+          <li><a href="https://www.socialmediatoday.com/news/youtube-clarifies-monetization-update-inauthentic-repeated-content/752892/">YouTube Clarifies Changes to Monetization Rules Around Inauthentic Content</a></li>
+          <li><a href="https://scalelab.com/en/why-youtube-is-cracking-down-on-ai-generated-content-in-2026">YouTube's AI content crackdown in 2026 — ScaleLab</a></li>
+          <li><a href="https://vidiq.com/blog/post/youtube-reused-content-policy-guide/">YouTube Reused Content Policy: How to Stay Monetized in 2026 — vidIQ</a></li>
+          <li><a href="https://tagteam.harvard.edu/hub_feeds/3415/feed_items/17131601/content">YouTube bans two popular channels for fake AI movie trailers</a></li>
+          <li><a href="https://outlierkit.com/resources/ai-copyright-supreme-court-ruling-youtube-2026/">AI Copyright Supreme Court Ruling: What YouTube Creators Must Know (2026)</a></li>
+          <li><a href="https://www.getphyllo.com/post/youtube-api-limits-how-to-calculate-api-usage-cost-and-fix-exceeded-api-quota">YouTube API Quota Limits 2026 — getphyllo</a></li>
+          <li><a href="https://support.google.com/youtube/answer/72851">YouTube Partner Program overview &amp; eligibility — YouTube Help</a></li>
+        </ul>
+      </div>
+
+      <div class="source-group">
+        <h4>Case studies &amp; economics</h4>
+        <ul>
+          <li><a href="https://miraflow.ai/blog/faceless-youtube-channel-explosion-ai-million-subscriber-creators-2026">The Faceless YouTube Channel Explosion 2026 — Miraflow</a></li>
+          <li><a href="https://www.hollywoodreporter.com/business/digital/faceless-creators-youtube-ai-damage-1236617586/">Faceless Creators Take a Hit As YouTube Cracks Down on AI Slop — Hollywood Reporter</a></li>
+          <li><a href="https://korpi.ai/blog/how-much-do-faceless-youtube-channels-make">How Much Do Faceless YouTube Channels Make in 2026 — Korpi AI</a></li>
+          <li><a href="https://outlierkit.com/blog/most-profitable-youtube-niches">19 Most Profitable YouTube Niches 2026 — OutlierKit</a></li>
+          <li><a href="https://virlo.ai/blog/highest-rpm-niches-on-youtube">25 Highest RPM YouTube Niches — Virlo</a></li>
+        </ul>
+      </div>
+
+      <div class="source-group">
+        <h4>Instagram</h4>
+        <ul>
+          <li><a href="https://buffer.com/resources/instagram-algorithms/">How the Instagram Algorithm Works — Buffer 2026 Guide</a></li>
+          <li><a href="https://creatorflow.so/blog/instagram-algorithm-2026/">Instagram Algorithm 2026: What Changed — CreatorFlow</a></li>
+          <li><a href="https://www.listenfirstmedia.com/the-state-of-instagram-in-2026-reach-is-not-a-posting-strategy/">The State of Instagram in 2026 — ListenFirst</a></li>
+          <li><a href="https://autofaceless.ai/blog/instagram-reels-statistics-2026">Instagram Reels Statistics 2026 — AutoFaceless</a></li>
+          <li><a href="https://www.facebook.com/business/help/543274486958120">About bonuses on Instagram — Meta Business Help Center</a></li>
+        </ul>
+      </div>
+
+      <div class="source-group">
+        <h4>TikTok</h4>
+        <ul>
+          <li><a href="https://postlinkapp.com/blog/tiktok-creator-rewards-program">TikTok Creator Rewards Requirements 2026 — PostLink</a></li>
+          <li><a href="https://support.tiktok.com/en/business-and-creator/creator-rewards-program/creator-rewards-program">TikTok Support — Creator Rewards Program</a></li>
+          <li><a href="https://www.darkroomagency.com/observatory/how-tiktok%E2%80%99s-algorithm-works-in-2026-and-15-tactics-to-go-viral">TikTok Algorithm 2026: How to Win With Rewatches — Darkroom</a></li>
+          <li><a href="https://www.auditsocials.com/blog/tiktok-ai-content-disclosure-rules-2026">TikTok AI Content Policy 2026: 4-Tier Labels &amp; Penalties — AuditSocials</a></li>
+          <li><a href="https://dynamoi.com/learn/ai-music-distribution/tiktok-ai-content-statistics">TikTok AI Statistics: 1.3B Videos Labeled — Dynamoi</a></li>
+        </ul>
+      </div>
+
+      <div class="source-group">
+        <h4>Tech stack</h4>
+        <ul>
+          <li><a href="https://blog.laozhang.ai/en/posts/best-ai-video-model">Best AI Video Generator 2026: Sora 2 vs Veo 3.1 vs Kling — LaoZhang AI</a></li>
+          <li><a href="https://www.befreed.ai/blog/best-tts-model-2026">Best TTS Model 2026 — Befreed</a></li>
+          <li><a href="https://pooya.blog/blog/crewai-vs-langgraph-autogen-comparison-2026/">LangGraph vs CrewAI vs AutoGen 2026 — Pooya Golchian</a></li>
+          <li><a href="https://iternal.ai/insights/best-vector-databases-2026">Best Vector Database 2026 — Iternal</a></li>
+          <li><a href="https://www.kalviumlabs.ai/blog/vector-databases-compared-pgvector-pinecone-qdrant-weaviate/">pgvector vs Pinecone vs Qdrant vs Weaviate 2026 — Kalvium Labs</a></li>
+          <li><a href="https://lmcouncil.ai/benchmarks">AI Model Benchmarks Jul 2026 — LM Council</a></li>
+          <li><a href="https://dasroot.net/posts/2026/02/orchestrating-ai-tasks-celery-temporal/">Orchestrating AI Tasks with Celery vs Temporal</a></li>
+          <li><a href="https://www.firecrawl.dev/blog/best-browser-agents">11 Best AI Browser Agents in 2026 — Firecrawl</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="doc-foot">
+      AI Content Studio Blueprint · prepared 2026-07-14 · source: ai-youtube-content/blueprint.md
+    </footer>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+    var sections = links
+      .map(function (a) { return document.querySelector(a.getAttribute('href')); })
+      .filter(Boolean);
+    if (!('IntersectionObserver' in window) || sections.length === 0) return;
+    var byId = {};
+    links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = byId[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function (s) { observer.observe(s); });
+  })();
+</script>
