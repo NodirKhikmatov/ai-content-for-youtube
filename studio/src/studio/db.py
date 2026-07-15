@@ -152,6 +152,25 @@ def get_video(video_id: Id) -> dict[str, Any]:
     return dict(row)
 
 
+def get_agent_runs(video_id: Id) -> list[dict[str, Any]]:
+    """Every agent_runs row for a video, oldest first — the full per-stage
+    history, including retries (an agent that failed then succeeded shows
+    up twice, on purpose). scripts/status.py prints this; resume's
+    get_latest_agent_output (below) reads a filtered, single-row slice of
+    the same table."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            select agent_name, status, error, started_at, finished_at
+            from agent_runs
+            where video_id = %s
+            order by started_at
+            """,
+            (video_id,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def update_video(video_id: Id, **fields: Any) -> None:
     """Column names come from **kwargs, always literal keyword arguments at
     the call site (e.g. `status="rejected"`), never a dict built from
