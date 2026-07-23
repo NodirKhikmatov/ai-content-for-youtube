@@ -208,6 +208,13 @@ scaffold can do on its own:
   deliberately stays manual (YouTube Studio) per blueprint.md Section 8.
   `YOUTUBE_CLIENT_ID`/`YOUTUBE_CLIENT_SECRET`/the OAuth consent flow are
   Phase 2 work, whenever the write path actually gets automated.
+- **Telegram** (`TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`, optional): lets
+  Quality Review's approve/reject decision happen from a phone instead of
+  the terminal (`tools/telegram.py`). Get a token from @BotFather, message
+  your bot once, then read your chat_id from
+  `https://api.telegram.org/bot<TOKEN>/getUpdates`. Leave unset to keep
+  using the terminal prompt — `run_pipeline.py` falls back to it
+  automatically, including on a Telegram timeout.
 
 ## Deliberately not here yet
 

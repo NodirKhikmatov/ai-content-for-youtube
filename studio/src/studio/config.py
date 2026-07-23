@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     youtube_client_secret: str | None = None
     youtube_refresh_token: str | None = None
 
+    # Optional: lets Quality Review's human-in-the-loop decision happen
+    # from a phone instead of requiring you at the terminal. Both must be
+    # set for tools/telegram.py to activate; if either is missing,
+    # run_pipeline.py falls back to the terminal prompt exactly as before.
+    telegram_bot_token: str | None = None
+    telegram_chat_id: str | None = None
+
     database_url: str = "postgresql://studio:studio@localhost:5434/studio"
 
     r2_account_id: str | None = None

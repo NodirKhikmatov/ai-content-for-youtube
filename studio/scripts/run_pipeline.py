@@ -17,6 +17,12 @@ fact-check, storytelling, script), a crash or Ctrl-C partway through a run
 no longer means starting over from Case Sourcing and re-paying for
 everything that already succeeded — see graph.py's _route_from_start.
 
+Quality Review's decision itself goes through Telegram instead of the
+terminal whenever TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID are both set (see
+tools/telegram.py) — so you don't have to be sitting at this terminal
+when a run pauses for review. Falls back to the terminal prompt if
+Telegram isn't configured, or if it times out waiting for a reply.
+
 Usage:
     python scripts/run_pipeline.py                 # start a new video
     python scripts/run_pipeline.py <video_id>       # resume an existing one
@@ -34,6 +40,7 @@ from studio import db
 from studio.agents.quality_review import MIN_DIMENSION_SCORE
 from studio.graph import compiled
 from studio.logging_config import configure_logging
+from studio.tools import telegram
 
 log = logging.getLogger(__name__)
 
@@ -91,6 +98,18 @@ def _prompt_decision() -> str:
         print(f"  Not understood: {raw!r}. Type exactly 'approve' or 'reject'.")
 
 
+def _format_review_message(payload: dict[str, Any]) -> str:
+    lines = ["Quality Review needs a decision.", "", "Scores:"]
+    for dimension, score in payload["scores"].items():
+        mark = "OK" if score >= MIN_DIMENSION_SCORE else "LOW"
+        lines.append(f"  [{mark}] {dimension}: {score:.2f}")
+    if payload["issues"]:
+        lines.append("")
+        lines.append("Issues flagged:")
+        lines.extend(f"  - {issue}" for issue in payload["issues"])
+    return "\n".join(lines)
+
+
 def main() -> None:
     configure_logging()
 
@@ -116,15 +135,31 @@ def main() -> None:
         print(f"\n--- Quality Review needs a decision (thread {thread_id}) ---")
         video_path = payload["assembled_video_path"]
         print(f"Video: {video_path}")
-        _open_video(video_path)
         _print_scores(payload["scores"])
         if payload["issues"]:
             print("Issues flagged:")
             for issue in payload["issues"]:
                 print(f"  - {issue}")
-        decision = _prompt_decision()
-        notes = input("Notes (optional): ").strip()
-        print(f"-> {decision}ing.")
+
+        decision: str | None = None
+        notes = ""
+        if telegram.is_configured():
+            print("(sent to Telegram for review — reply there, or Ctrl+C to use this terminal instead)")
+            message = _format_review_message(payload)
+            if not telegram.send_video_if_small_enough(video_path, message):
+                telegram.send_message(message)
+            try:
+                decision = telegram.ask_for_decision("Approve for Compliance review?")
+                print(f"Telegram reply received: {decision}")
+            except TimeoutError as exc:
+                print(f"{exc}")
+
+        if decision is None:
+            _open_video(video_path)
+            decision = _prompt_decision()
+            notes = input("Notes (optional): ").strip()
+
+        print(f"-> {'approving' if decision == 'approve' else 'rejecting'}.")
         result = app.invoke(Command(resume={"decision": decision, "notes": notes}), config=config)
 
     print("\n--- Run finished ---")
