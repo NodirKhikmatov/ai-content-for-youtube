@@ -270,6 +270,11 @@ def calendar_restore(entry_id: str):
 # --- Studio Dashboard & Routes ---------------------------------------
 
 
+@app.get("/landing")
+def landing_page(request: Request):
+    return templates.TemplateResponse(request, "landing.html", {})
+
+
 @app.get("/")
 def dashboard(request: Request):
     channel_id = _channel_id()
