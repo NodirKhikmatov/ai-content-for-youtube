@@ -4,8 +4,18 @@
 create extension if not exists pgcrypto;
 create extension if not exists vector;
 
+create table if not exists users (
+    id           uuid primary key default gen_random_uuid(),
+    email        text unique not null,
+    password_hash text not null,
+    full_name    text,
+    settings     jsonb not null default '{}'::jsonb,
+    created_at   timestamptz not null default now()
+);
+
 create table if not exists channels (
     id           uuid primary key default gen_random_uuid(),
+    user_id      uuid references users(id) on delete set null,
     name         text not null,
     niche        text not null,
     format_thesis text not null,

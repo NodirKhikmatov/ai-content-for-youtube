@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sign In — AI YouTube Studio{% endblock %}
+{% block content %}
+<div style="max-width:440px; margin: 40px auto;">
+  <div class="card" style="padding: 28px;">
+    <h1 style="margin: 0 0 8px; font-size: 24px; text-align: center;">🔐 Sign In to Studio</h1>
+    <p class="muted" style="text-align: center; font-size: 14px; margin-bottom: 24px;">Enter your credentials to access your personal AI video studio.</p>
+
+    {% if error %}
+    <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--bad); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;">
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/login" method="post">
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com" autofocus>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="••••••••">
+      </div>
+
+      <button class="btn" type="submit" style="width: 100%; margin-top: 20px; padding: 12px; font-size: 15px;">Sign In</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 13px;" class="muted">
+      Don't have an account? <a href="/register" style="color: var(--accent); text-decoration: underline;">Create an account</a>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; text-align: center;" class="muted">
+      💡 Default Admin: <code>admin@studio.ai</code> / <code>admin123</code>
+    </div>
+  </div>
+</div>
+{% endblock %}

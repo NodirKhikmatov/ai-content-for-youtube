@@ -78,7 +78,16 @@
     <a href="/backlog">Backlog</a>
   </div>
   <div class="header-right">
-    <a class="btn secondary" href="/settings" style="padding:6px 12px; font-size:13px;">⚙️ Settings & API Keys</a>
+    <a class="btn secondary" href="/settings" style="padding:6px 12px; font-size:13px;">⚙️ Settings</a>
+    {% if current_user %}
+    <a href="/profile" style="display:flex; align-items:center; gap:6px; font-weight:600; color:#818cf8;">
+      <span>👤 {{ current_user.full_name or current_user.email.split('@')[0] }}</span>
+    </a>
+    <a href="/logout" style="font-size:13px; color:var(--muted);">Logout</a>
+    {% else %}
+    <a href="/login" style="font-size:13px;">Sign In</a>
+    <a class="btn" href="/register" style="padding:6px 14px; font-size:13px;">Register</a>
+    {% endif %}
   </div>
 </header>
 <main>

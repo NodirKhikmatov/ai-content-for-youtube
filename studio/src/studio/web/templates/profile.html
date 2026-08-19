@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}My Profile & Personal Keys — AI YouTube Studio{% endblock %}
+{% block content %}
+<div style="max-width:760px; margin: 20px auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+    <div>
+      <h1 style="margin: 0 0 4px;">👤 My Profile & Key Vault</h1>
+      <div class="muted" style="font-size: 14px;">Manage your personal account details and private AI API keys.</div>
+    </div>
+    <a class="btn secondary" href="/logout">🚪 Sign Out</a>
+  </div>
+
+  {% if saved %}
+  <div class="card" style="background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #34d399; margin-bottom: 20px;">
+    ✅ Profile and API keys saved successfully!
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="card" style="background: rgba(239, 68, 68, 0.15); border-color: var(--bad); color: #fca5a5; margin-bottom: 20px;">
+    ❌ {{ error }}
+  </div>
+  {% endif %}
+
+  <form action="/profile" method="post">
+    <div class="card" style="margin-bottom: 20px;">
+      <h2 style="margin-top: 0; color: #38bdf8;">Account Information</h2>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="full_name">Full Name</label>
+          <input type="text" id="full_name" name="full_name" value="{{ user.full_name or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" name="email" value="{{ user.email }}" required>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="form-label" for="new_password">Change Password (Leave blank to keep current)</label>
+        <input type="password" id="new_password" name="new_password" placeholder="New password (min 6 chars)">
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 20px;">
+      <h2 style="margin-top: 0; color: #a78bfa;">🔑 Personal API Key Vault</h2>
+      <div class="muted" style="font-size: 13px; margin-bottom: 16px;">
+        These keys belong exclusively to your account. When you generate videos, your personal keys are used.
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="anthropic_api_key">Anthropic API Key (Claude)</label>
+          <input type="password" id="anthropic_api_key" name="anthropic_api_key" value="{{ user.settings.get('anthropic_api_key', '') }}" placeholder="sk-ant-...">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="elevenlabs_api_key">ElevenLabs API Key (Voice)</label>
+          <input type="password" id="elevenlabs_api_key" name="elevenlabs_api_key" value="{{ user.settings.get('elevenlabs_api_key', '') }}" placeholder="sk_...">
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="form-group">
+          <label class="form-label" for="kling_access_key">Kling Access Key</label>
+          <input type="password" id="kling_access_key" name="kling_access_key" value="{{ user.settings.get('kling_access_key', '') }}" placeholder="Access Key">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="kling_secret_key">Kling Secret Key</label>
+          <input type="password" id="kling_secret_key" name="kling_secret_key" value="{{ user.settings.get('kling_secret_key', '') }}" placeholder="Secret Key">
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 14px;">
+        <div class="form-group">
+          <label class="form-label" for="gemini_api_key">Google Gemini API Key</label>
+          <input type="password" id="gemini_api_key" name="gemini_api_key" value="{{ user.settings.get('gemini_api_key', '') }}" placeholder="AIzaSy...">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tavily_api_key">Tavily API Key (Search)</label>
+          <input type="password" id="tavily_api_key" name="tavily_api_key" value="{{ user.settings.get('tavily_api_key', '') }}" placeholder="tvly-...">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:12px;">
+      <a class="btn secondary" href="/">Back to Dashboard</a>
+      <button class="btn" type="submit">💾 Save Profile & Keys</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -51,6 +51,78 @@ def get_connection() -> Iterator[Connection[dict[str, Any]]]:
         conn.close()
 
 
+# --- users & authentication ------------------------------------------
+
+
+def create_user(email: str, password_hash: str, full_name: str = "") -> dict[str, Any]:
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            insert into users (email, password_hash, full_name)
+            values (%s, %s, %s)
+            returning id, email, full_name, settings, created_at
+            """,
+            (email.lower().strip(), password_hash, full_name.strip()),
+        ).fetchone()
+        if row is None:
+            raise RuntimeError("Failed to create user")
+        return dict(row)
+
+
+def get_user_by_email(email: str) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "select id, email, password_hash, full_name, settings, created_at from users where email = %s",
+            (email.lower().strip(),),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def get_user_by_id(user_id: Id) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "select id, email, password_hash, full_name, settings, created_at from users where id = %s",
+            (user_id,),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def update_user_profile(
+    user_id: Id,
+    full_name: str,
+    email: str,
+    password_hash: str | None = None,
+) -> None:
+    with get_connection() as conn:
+        if password_hash:
+            conn.execute(
+                "update users set full_name = %s, email = %s, password_hash = %s where id = %s",
+                (full_name.strip(), email.lower().strip(), password_hash, user_id),
+            )
+        else:
+            conn.execute(
+                "update users set full_name = %s, email = %s where id = %s",
+                (full_name.strip(), email.lower().strip(), user_id),
+            )
+
+
+def update_user_settings(user_id: Id, user_settings: dict[str, Any]) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            "update users set settings = %s::jsonb where id = %s",
+            (json.dumps(user_settings), user_id),
+        )
+
+
+def ensure_default_user() -> dict[str, Any]:
+    from studio.tools.auth import hash_password
+
+    user = get_user_by_email("admin@studio.ai")
+    if user:
+        return user
+    return create_user("admin@studio.ai", hash_password("admin123"), "Studio Admin")
+
+
 # --- channels ---------------------------------------------------------
 
 

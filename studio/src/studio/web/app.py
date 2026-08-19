@@ -21,12 +21,34 @@ from studio import db
 from studio.agents.quality_review import MIN_DIMENSION_SCORE
 from studio.config import settings
 from studio.publish import mark_published
+from studio.tools.auth import (
+    create_session_token,
+    hash_password,
+    verify_password,
+    verify_session_token,
+)
 from studio.web import runner
 
 app = FastAPI(title="The Turning Point — Studio")
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 CHANNEL_NAME = "The Turning Point"
 MEDIA_DIR = Path("media")
+
+
+def _get_current_user(request: Request) -> dict[str, Any] | None:
+    token = request.cookies.get("session_token")
+    if token:
+        user_id = verify_session_token(token)
+        if user_id:
+            user = db.get_user_by_id(user_id)
+            if user:
+                return user
+    return db.ensure_default_user()
+
+
+def _render(request: Request, template_name: str, context: dict[str, Any]):
+    context["current_user"] = _get_current_user(request)
+    return templates.TemplateResponse(request, template_name, context)
 
 
 def _channel_id():
@@ -46,6 +68,109 @@ def _media_rel(path_str: str | None, video_id: str) -> str | None:
         return Path(path_str).name
 
 
+# --- Authentication Routes -------------------------------------------
+
+
+@app.get("/login")
+def login_page(request: Request, error: str | None = None):
+    return _render(request, "login.html", {"error": error})
+
+
+@app.post("/login")
+def handle_login(request: Request, email: str = Form(...), password: str = Form(...)):
+    user = db.get_user_by_email(email)
+    if not user or not verify_password(password, user["password_hash"]):
+        return _render(
+            request, "login.html", {"error": "Invalid email or password", "email": email}
+        )
+    token = create_session_token(str(user["id"]))
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie("session_token", token, max_age=30 * 24 * 3600, httponly=True)
+    return response
+
+
+@app.get("/register")
+def register_page(request: Request, error: str | None = None):
+    return _render(request, "register.html", {"error": error})
+
+
+@app.post("/register")
+def handle_register(
+    request: Request,
+    full_name: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+):
+    if len(password) < 6:
+        return _render(
+            request, "register.html", {"error": "Password must be at least 6 characters"}
+        )
+    existing = db.get_user_by_email(email)
+    if existing:
+        return _render(
+            request, "register.html", {"error": "An account with this email already exists"}
+        )
+    user = db.create_user(email, hash_password(password), full_name)
+    token = create_session_token(str(user["id"]))
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie("session_token", token, max_age=30 * 24 * 3600, httponly=True)
+    return response
+
+
+@app.get("/logout")
+def handle_logout():
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie("session_token")
+    return response
+
+
+@app.get("/profile")
+def profile_page(request: Request, saved: bool = False, error: str | None = None):
+    user = _get_current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    return _render(request, "profile.html", {"user": user, "saved": saved, "error": error})
+
+
+@app.post("/profile")
+def handle_update_profile(
+    request: Request,
+    full_name: str = Form(...),
+    email: str = Form(...),
+    new_password: str = Form(""),
+    anthropic_api_key: str = Form(""),
+    elevenlabs_api_key: str = Form(""),
+    kling_access_key: str = Form(""),
+    kling_secret_key: str = Form(""),
+    gemini_api_key: str = Form(""),
+    tavily_api_key: str = Form(""),
+):
+    user = _get_current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+
+    pw_hash = hash_password(new_password) if new_password.strip() else None
+    db.update_user_profile(user["id"], full_name, email, pw_hash)
+
+    personal_settings = dict(user.get("settings") or {})
+    personal_settings.update(
+        {
+            "anthropic_api_key": anthropic_api_key.strip(),
+            "elevenlabs_api_key": elevenlabs_api_key.strip(),
+            "kling_access_key": kling_access_key.strip(),
+            "kling_secret_key": kling_secret_key.strip(),
+            "gemini_api_key": gemini_api_key.strip(),
+            "tavily_api_key": tavily_api_key.strip(),
+        }
+    )
+    db.update_user_settings(user["id"], personal_settings)
+
+    return RedirectResponse("/profile?saved=true", status_code=303)
+
+
+# --- Studio Dashboard & Routes ---------------------------------------
+
+
 @app.get("/")
 def dashboard(request: Request):
     channel_id = _channel_id()
@@ -58,7 +183,7 @@ def dashboard(request: Request):
         "transcribe_backend": settings.transcribe_backend,
         "quality_review_backend": settings.quality_review_backend,
     }
-    return templates.TemplateResponse(request, "index.html", context)
+    return _render(request, "index.html", context)
 
 
 @app.post("/runs/start")
@@ -77,7 +202,7 @@ def resume_video(video_id: str):
 def run_status(request: Request, thread_id: str):
     handle = runner.RUNS.get(thread_id)
     if handle is None:
-        return templates.TemplateResponse(
+        return _render(
             request, "run_status.html", {"handle": None, "thread_id": thread_id}
         )
     agent_runs = db.get_agent_runs(handle.video_id) if handle.video_id else []
@@ -93,7 +218,7 @@ def run_status(request: Request, thread_id: str):
         "min_dimension_score": MIN_DIMENSION_SCORE,
         "review_media_rel": review_media_rel,
     }
-    return templates.TemplateResponse(request, "run_status.html", context)
+    return _render(request, "run_status.html", context)
 
 
 @app.post("/runs/{thread_id}/decide")
@@ -107,7 +232,7 @@ from studio.config import settings, update_settings
 
 @app.get("/create")
 def create_page(request: Request):
-    return templates.TemplateResponse(request, "create.html", {})
+    return _render(request, "create.html", {})
 
 
 @app.post("/runs/custom")
@@ -146,7 +271,7 @@ def settings_page(request: Request, saved: bool = False):
         "settings": settings,
         "saved": saved,
     }
-    return templates.TemplateResponse(request, "settings.html", context)
+    return _render(request, "settings.html", context)
 
 
 @app.post("/settings")
@@ -201,13 +326,13 @@ def save_settings(
 def backlog(request: Request):
     channel_id = _channel_id()
     context = {"cases": db.list_backlog(channel_id, limit=100)}
-    return templates.TemplateResponse(request, "backlog.html", context)
+    return _render(request, "backlog.html", context)
 
 
 @app.get("/videos")
 def videos(request: Request):
     context = {"videos": db.list_videos(limit=200)}
-    return templates.TemplateResponse(request, "videos.html", context)
+    return _render(request, "videos.html", context)
 
 
 @app.get("/videos/{video_id}")
@@ -218,6 +343,8 @@ def video_detail(request: Request, video_id: str):
     quality_verdict = db.get_latest_agent_output(video_id, "quality_review")
     compliance_verdict = db.get_latest_agent_output(video_id, "compliance")
     publishing_output = db.get_latest_agent_output(video_id, "publishing") or {}
+    short_output = db.get_latest_agent_output(video_id, "shorts_assembly") or {}
+    short_handle = runner.SHORTS.get(video_id)
     thumb_paths = publishing_output.get("thumbnail_paths", [])
     thumb_media_urls = [f"/media/{video_id}/thumbnails/thumbnail_{i + 1}.jpg" for i in range(len(thumb_paths))]
 
@@ -235,7 +362,7 @@ def video_detail(request: Request, video_id: str):
                 "duration_seconds": out.get("duration_seconds", 0),
             })
 
-    from studio.agents.dubbing import SUPPORTED_LANGUAGES, dub_video
+    from studio.agents.dubbing import SUPPORTED_LANGUAGES
 
     context: dict[str, Any] = {
         "video": video,
@@ -256,7 +383,7 @@ def video_detail(request: Request, video_id: str):
             short_output.get("final_path") if short_output else None, video_id
         ),
     }
-    return templates.TemplateResponse(request, "video_detail.html", context)
+    return _render(request, "video_detail.html", context)
 
 
 @app.post("/videos/{video_id}/dub")
