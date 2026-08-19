@@ -475,3 +475,64 @@ def record_decision(
         ).fetchone()
     assert row is not None, "INSERT ... RETURNING always yields a row on success"
     return row["id"]
+
+
+# --- content calendar -------------------------------------------------
+
+
+def save_calendar(channel_id: Id, entries: list[dict[str, Any]]) -> None:
+    """Replace the calendar for a channel with a fresh 30-day batch."""
+    with get_connection() as conn:
+        conn.execute("delete from content_calendar where channel_id = %s", (channel_id,))
+        for e in entries:
+            conn.execute(
+                """
+                insert into content_calendar
+                    (channel_id, day_number, scheduled_date, title, hook, turning_point,
+                     content_type, duration_minutes, tags, priority, views_potential, status)
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
+                """,
+                (
+                    channel_id,
+                    e.get("day", 1),
+                    e.get("date"),
+                    e.get("title", "Untitled"),
+                    e.get("hook"),
+                    e.get("turning_point"),
+                    e.get("content_type", "documentary"),
+                    e.get("duration_minutes", 12),
+                    json.dumps(e.get("tags", [])),
+                    e.get("priority", "normal"),
+                    e.get("estimated_views_potential", "medium"),
+                    e.get("status", "planned"),
+                ),
+            )
+
+
+def list_calendar(channel_id: Id) -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            select c.*, v.title as video_title
+            from content_calendar c
+            left join videos v on v.id = c.video_id
+            where c.channel_id = %s
+            order by c.day_number asc
+            """,
+            (channel_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def update_calendar_entry_status(entry_id: Id, status: str, video_id: Id | None = None) -> None:
+    with get_connection() as conn:
+        if video_id:
+            conn.execute(
+                "update content_calendar set status = %s, video_id = %s where id = %s",
+                (status, video_id, entry_id),
+            )
+        else:
+            conn.execute(
+                "update content_calendar set status = %s where id = %s",
+                (status, entry_id),
+            )

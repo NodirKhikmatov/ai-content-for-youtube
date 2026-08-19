@@ -113,6 +113,30 @@ create index if not exists idx_agent_runs_video on agent_runs(video_id);
 create index if not exists idx_decisions_video on decisions(video_id);
 create index if not exists idx_angle_embeddings_channel on angle_embeddings(channel_id);
 
+create table if not exists content_calendar (
+    id             uuid primary key default gen_random_uuid(),
+    channel_id     uuid not null references channels(id) on delete cascade,
+    day_number     int not null,
+    scheduled_date date not null,
+    title          text not null,
+    hook           text,
+    turning_point  text,
+    content_type   text not null default 'documentary',
+    duration_minutes int not null default 12,
+    tags           jsonb not null default '[]'::jsonb,
+    priority       text not null default 'normal'
+                   check (priority in ('must_make', 'high', 'normal')),
+    views_potential text not null default 'medium'
+                   check (views_potential in ('viral', 'high', 'medium', 'steady')),
+    status         text not null default 'planned'
+                   check (status in ('planned', 'in_progress', 'produced', 'published', 'skipped')),
+    video_id       uuid references videos(id) on delete set null,
+    created_at     timestamptz not null default now()
+);
+
+create index if not exists idx_calendar_channel on content_calendar(channel_id);
+create index if not exists idx_calendar_date on content_calendar(scheduled_date);
+
 -- No ivfflat/hnsw index on angle_embeddings.embedding yet: those need a
 -- meaningful row count to tune (lists/m parameters) and a brute-force scan
 -- over dozens-to-hundreds of rows is instant. Add one when the corpus

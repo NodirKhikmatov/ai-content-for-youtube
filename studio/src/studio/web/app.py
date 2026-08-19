@@ -210,6 +210,63 @@ def handle_delete_user(request: Request, user_id: str):
     return RedirectResponse("/admin", status_code=303)
 
 
+
+# --- Content Calendar Routes -----------------------------------------
+
+
+@app.get("/calendar")
+def calendar_page(request: Request):
+    channel_id = _channel_id()
+    entries = db.list_calendar(channel_id)
+    return _render(request, "calendar.html", {"entries": entries})
+
+
+@app.post("/calendar/generate")
+def generate_calendar(request: Request):
+    from studio.agents.content_calendar import generate_content_calendar
+    channel_id = _channel_id()
+    # Pass existing cases as context to avoid duplicates
+    existing_cases = [c["title"] for c in db.list_backlog(channel_id, limit=50)]
+    entries = generate_content_calendar(
+        channel_niche=settings.channel_niche if hasattr(settings, "channel_niche") else "True Crime & Justice",
+        format_thesis="The single turning point that changed everything",
+        existing_cases=existing_cases,
+    )
+    db.save_calendar(channel_id, entries)
+    return RedirectResponse("/calendar", status_code=303)
+
+
+@app.post("/calendar/{entry_id}/produce")
+def calendar_produce(request: Request, entry_id: str):
+    """Start a new pipeline run from a calendar entry."""
+    channel_id = _channel_id()
+    entries = db.list_calendar(channel_id)
+    entry = next((e for e in entries if str(e["id"]) == entry_id), None)
+    if entry:
+        custom_topic = {
+            "title": entry["title"],
+            "niche": entry.get("content_type", "documentary"),
+            "turning_point": entry.get("turning_point") or "",
+            "extra_context": entry.get("hook") or "",
+        }
+        handle = runner.start_run(custom_topic=custom_topic)
+        db.update_calendar_entry_status(entry_id, "in_progress")
+        return RedirectResponse(f"/runs/{handle.thread_id}", status_code=303)
+    return RedirectResponse("/calendar", status_code=303)
+
+
+@app.post("/calendar/{entry_id}/skip")
+def calendar_skip(entry_id: str):
+    db.update_calendar_entry_status(entry_id, "skipped")
+    return RedirectResponse("/calendar", status_code=303)
+
+
+@app.post("/calendar/{entry_id}/restore")
+def calendar_restore(entry_id: str):
+    db.update_calendar_entry_status(entry_id, "planned")
+    return RedirectResponse("/calendar", status_code=303)
+
+
 # --- Studio Dashboard & Routes ---------------------------------------
 
 

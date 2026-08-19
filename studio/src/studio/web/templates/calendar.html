@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}📅 AI Content Calendar — AI YouTube Studio{% endblock %}
+{% block head %}
+<style>
+  .cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .cal-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .cal-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color .2s ease, transform .15s ease, box-shadow .15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .cal-card:hover {
+    border-color: #6366f1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99,102,241,0.15);
+  }
+  .cal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .cal-card.viral::before { background: linear-gradient(90deg, #f43f5e, #ec4899); }
+  .cal-card.high::before { background: linear-gradient(90deg, #f59e0b, #fb923c); }
+  .cal-card.medium::before { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+  .cal-card.steady::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+  .cal-card.planned { border-color: var(--border); }
+  .cal-card.in_progress { border-color: #f59e0b; background: rgba(245,158,11,0.06); }
+  .cal-card.produced { border-color: #818cf8; background: rgba(129,140,248,0.06); }
+  .cal-card.published { border-color: #10b981; background: rgba(16,185,129,0.06); }
+  .cal-card.skipped { opacity: 0.45; }
+
+  .cal-day { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .cal-title { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 8px; }
+  .cal-hook { font-size: 12px; color: var(--muted); line-height: 1.4; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .cal-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+  .priority-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .priority-dot.must_make { background: #f43f5e; box-shadow: 0 0 6px #f43f5e; }
+  .priority-dot.high { background: #f59e0b; }
+  .priority-dot.normal { background: var(--muted); }
+
+  .view-tabs { display: flex; gap: 2px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+  .view-tab { padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); border: none; background: transparent; transition: all .15s; }
+  .view-tab.active { background: #4f46e5; color: #fff; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .stat-mini { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; text-align: center; }
+  .stat-mini .n { font-size: 22px; font-weight: 800; }
+  .stat-mini .l { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="cal-header">
+  <div>
+    <h1 style="margin: 0 0 4px;">📅 AI Content Calendar</h1>
+    <div class="muted" style="font-size: 14px;">30-day viral production roadmap for your channel. Click any card to start production.</div>
+  </div>
+  <div class="cal-controls">
+    <form action="/calendar/generate" method="post">
+      <button class="btn" type="submit" id="generate-btn" onclick="this.textContent='⏳ Generating...'; this.disabled=true;">
+        ✨ Generate New 30-Day Plan
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+{% if entries %}
+<div class="stats-row">
+  <div class="stat-mini">
+    <div class="n" style="color: #f43f5e;">{{ entries | selectattr("views_potential", "equalto", "viral") | list | length }}</div>
+    <div class="l">🔥 Viral</div>
+  </div>
+  <div class="stat-mini">
+    <div class="n" style="color: #f59e0b;">{{ entries | selectattr("views_potential", "equalto", "high") | list | length }}</div>
+    <div class="l">📈 High</div>
+  </div>
+  <div class="stat-mini">
+    <div class="n" style="color: #818cf8;">{{ entries | selectattr("status", "equalto", "planned") | list | length }}</div>
+    <div class="l">📋 Planned</div>
+  </div>
+  <div class="stat-mini">
+    <div class="n" style="color: #38bdf8;">{{ entries | selectattr("status", "equalto", "in_progress") | list | length }}</div>
+    <div class="l">⚙️ In Progress</div>
+  </div>
+  <div class="stat-mini">
+    <div class="n" style="color: #10b981;">{{ entries | selectattr("status", "in", ["produced","published"]) | list | length }}</div>
+    <div class="l">✅ Done</div>
+  </div>
+  <div class="stat-mini">
+    <div class="n">{{ entries | selectattr("priority", "equalto", "must_make") | list | length }}</div>
+    <div class="l">🎯 Must Make</div>
+  </div>
+</div>
+{% endif %}
+
+{% if entries %}
+<div class="cal-grid">
+  {% for e in entries %}
+  <div class="cal-card {{ e.views_potential }} {{ e.status }}">
+    <div class="cal-day">
+      <span>Day {{ e.day_number }} · {{ e.scheduled_date }}</span>
+      <span class="priority-dot {{ e.priority }}" title="Priority: {{ e.priority }}"></span>
+    </div>
+    <div class="cal-title">{{ e.title }}</div>
+    <div class="cal-hook" title="{{ e.hook }}">{{ e.hook }}</div>
+    <div class="cal-meta">
+      <span class="badge {% if e.views_potential == 'viral' %}bad{% elif e.views_potential == 'high' %}warn{% elif e.views_potential == 'medium' %}ok{% else %}{% endif %}">
+        {{ "🔥" if e.views_potential == "viral" else "📈" if e.views_potential == "high" else "📊" }} {{ e.views_potential }}
+      </span>
+      <span class="badge {{ e.status }}">{{ e.status }}</span>
+      <span class="muted" style="font-size:11px;">{{ e.duration_minutes }}min · {{ e.content_type }}</span>
+    </div>
+    {% if e.video_id %}
+    <div class="cal-actions">
+      <a class="btn secondary" href="/videos/{{ e.video_id }}" style="padding: 4px 10px; font-size: 12px; flex: 1; text-align: center;">🎬 View Video</a>
+    </div>
+    {% elif e.status in ["planned", "in_progress"] %}
+    <div class="cal-actions">
+      <form action="/calendar/{{ e.id }}/produce" method="post" style="flex: 1;">
+        <button class="btn" type="submit" style="padding: 4px 10px; font-size: 12px; width: 100%;"
+          onclick="this.textContent='⏳ Queued...'; this.disabled=true;">
+          ▶ Start Production
+        </button>
+      </form>
+      <form action="/calendar/{{ e.id }}/skip" method="post">
+        <button class="btn secondary" type="submit" style="padding: 4px 8px; font-size: 12px;" title="Skip this entry">✕</button>
+      </form>
+    </div>
+    {% elif e.status == "skipped" %}
+    <div class="cal-actions">
+      <form action="/calendar/{{ e.id }}/restore" method="post" style="flex: 1;">
+        <button class="btn secondary" type="submit" style="padding: 4px 10px; font-size: 12px; width: 100%;">↩ Restore</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 60px 20px;">
+  <div style="font-size: 48px; margin-bottom: 12px;">📅</div>
+  <h2 style="color: var(--text); font-size: 18px; text-transform: none; letter-spacing: 0; margin-bottom: 8px;">No Content Calendar Yet</h2>
+  <p class="muted" style="font-size: 14px; margin-bottom: 20px;">Click "Generate New 30-Day Plan" to create your AI-powered content roadmap.</p>
+  <form action="/calendar/generate" method="post">
+    <button class="btn" type="submit" style="font-size: 15px; padding: 12px 28px;">✨ Generate My 30-Day Plan</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
