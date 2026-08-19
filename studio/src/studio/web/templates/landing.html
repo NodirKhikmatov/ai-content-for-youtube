@@ -1019,10 +1019,13 @@
       <span class="logo-name">The Turning Point</span>
     </a>
     <ul class="nav-links">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#how">How It Works</a></li>
-      <li><a href="#languages">Languages</a></li>
-      <li><a href="#calendar">Calendar</a></li>
+      <li><a href="#try-ai">⚡ Try AI</a></li>
+      <li><a href="#demo">🎬 Demo</a></li>
+      <li><a href="#output">🎁 Output</a></li>
+      <li><a href="#webtoon">🎭 Webtoon</a></li>
+      <li><a href="#calculator">💰 Calculator</a></li>
+      <li><a href="#compare">⚖️ Compare</a></li>
+      <li><a href="#faq">❓ FAQ</a></li>
     </ul>
     <div class="nav-cta">
       <a href="/login" class="btn-ghost">Sign In</a>
@@ -1161,6 +1164,83 @@
       </div>
     </div>
   </div>
+
+  <!-- ===== INTERACTIVE AI SANDBOX ===== -->
+  <section id="try-ai" style="padding: 60px 24px 80px; position: relative; z-index: 1;">
+    <div style="max-width: 960px; margin: 0 auto;">
+      <div class="fade-in" style="text-align: center; margin-bottom: 36px;">
+        <div class="section-label">⚡ Instant Playground</div>
+        <h2 class="section-title">Test the AI right now.<br><span style="background:linear-gradient(90deg,#ff3d6e,#ff9f43,#f9f871,#0affb2,#00d2ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Type any idea.</span></h2>
+        <p class="section-sub" style="margin: 0 auto;">See how our Claude-powered engine instantly turns any raw idea into a high-retention YouTube hook, viral title, and storyboard concept.</p>
+      </div>
+
+      <!-- Input box container -->
+      <div class="fade-in" style="background: linear-gradient(135deg, rgba(13,13,18,0.95), rgba(18,12,20,0.95)); border: 1px solid rgba(255,61,110,0.3); border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(255,61,110,0.1); position: relative;">
+        <!-- Input row -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <input id="sandbox-input" type="text" placeholder="e.g. The 1983 Stanislav Petrov nuclear decision, Steve Jobs 1997 Apple return, Flight MH370..." 
+            value="The Secret Nuclear Decision of 1983"
+            style="flex: 1; min-width: 260px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 18px; color: white; font-size: 15px; font-family: inherit; outline: none; transition: border-color .2s;"
+            onfocus="this.style.borderColor='#ff3d6e'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'"
+            onkeydown="if(event.key==='Enter') generateSandboxPitch()">
+          <button id="sandbox-btn" onclick="generateSandboxPitch()" style="background: linear-gradient(135deg,#ff3d6e,#ff9f43); color: white; border: none; padding: 14px 28px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .2s; box-shadow: 0 4px 20px rgba(255,61,110,0.4); display: flex; align-items: center; gap: 8px;"
+            onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
+            <span>✨ Generate AI Pitch</span>
+          </button>
+        </div>
+
+        <!-- Quick suggestion pills -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Try preset:</span>
+          <button onclick="setSandboxPrompt('✈️ The Vanishing of Malaysia Airlines Flight 370')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: var(--text); cursor: pointer; font-family: inherit; transition: all .15s;" onmouseover="this.style.borderColor='#00d2ff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">✈️ MH370 Mystery</button>
+          <button onclick="setSandboxPrompt('🍎 The 1997 Secret Meeting That Saved Apple')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: var(--text); cursor: pointer; font-family: inherit; transition: all .15s;" onmouseover="this.style.borderColor='#ff9f43'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">🍎 Steve Jobs 1997 Return</button>
+          <button onclick="setSandboxPrompt('📜 Alisher Navoiy: Tilni va Millatni Qutqargan Shoir')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: var(--text); cursor: pointer; font-family: inherit; transition: all .15s;" onmouseover="this.style.borderColor='#0affb2'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">📜 Alisher Navoiy (O'zbekcha)</button>
+          <button onclick="setSandboxPrompt('💣 The 1983 Soviet Officer Who Prevented World War 3')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: var(--text); cursor: pointer; font-family: inherit; transition: all .15s;" onmouseover="this.style.borderColor='#ff3d6e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">💣 Nuclear Close Call 1983</button>
+        </div>
+
+        <!-- Generated output display -->
+        <div id="sandbox-result" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); display: block;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <!-- Left: Title & Hook -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 11px; font-weight: 700; color: #ff3d6e; text-transform: uppercase; letter-spacing: .08em;">🎯 Viral YouTube Title</span>
+                <span style="background: rgba(255,61,110,0.15); color: #ff8fab; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;">Score: 96/100</span>
+              </div>
+              <div id="sandbox-title" style="font-size: 16px; font-weight: 800; line-height: 1.35; color: white; margin-bottom: 14px;">
+                "The Man Who Decided NOT to End the World — Stanislav Petrov (1983)"
+              </div>
+
+              <div style="font-size: 11px; font-weight: 700; color: #ff9f43; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;">🎣 Opening 5-Second Hook</div>
+              <div id="sandbox-hook" style="font-size: 13.5px; color: #d0d7e5; line-height: 1.5; font-style: italic; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border-left: 3px solid #ff9f43;">
+                "At 00:14 on September 26, 1983, five nuclear sirens went off inside a secret Soviet bunker. One man had 120 seconds to choose between launching World War 3... or trusting his gut."
+              </div>
+            </div>
+
+            <!-- Right: Turning Point & Concept -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #00d2ff; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;">🔄 The Pivotal Turning Point</div>
+                <div id="sandbox-tp" style="font-size: 13px; color: #b8c4db; line-height: 1.5; margin-bottom: 14px;">
+                  Petrov noticed the radar claimed only 5 missiles were launched. Realizing a true first-strike would be hundreds of missiles, he declared it a false alarm — defying military orders and saving civilization.
+                </div>
+
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;">
+                  <span style="background: rgba(0,210,255,0.12); color: #00d2ff; border: 1px solid rgba(0,210,255,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">⏱️ Est. Length: 14 min</span>
+                  <span style="background: rgba(10,255,178,0.12); color: #0affb2; border: 1px solid rgba(10,255,178,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">🔥 High Retention</span>
+                  <span style="background: rgba(199,119,255,0.12); color: #c77dff; border: 1px solid rgba(199,119,255,0.25); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">🎭 4 Voice Roles</span>
+                </div>
+              </div>
+
+              <a id="sandbox-create-btn" href="/create" style="background: linear-gradient(135deg, #ff3d6e, #ff9f43); color: white; text-decoration: none; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+                🚀 Build Full Video with this Topic in Studio →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- FEATURES -->
   <section class="features-section" id="features">
@@ -1898,6 +1978,321 @@
     </div>
   </section>
 
+  <!-- ===== ROI & REVENUE CALCULATOR ===== -->
+  <section id="calculator" style="padding: 80px 24px; position: relative; z-index: 1; background: linear-gradient(180deg, transparent, rgba(10,255,178,0.02), transparent);">
+    <div style="max-width: 1050px; margin: 0 auto;">
+      <div class="fade-in" style="text-align: center; margin-bottom: 50px;">
+        <div class="section-label">💰 Earnings Potential</div>
+        <h2 class="section-title">Calculate your YouTube<br><span style="background:linear-gradient(90deg,#0affb2,#00d2ff,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">revenue & hours saved</span></h2>
+        <p class="section-sub" style="margin: 0 auto;">Drag the sliders to see how automated production scales your channel income and saves hundreds of hours of manual video editing.</p>
+      </div>
+
+      <div class="fade-in" style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px; background: #0c0d14; border: 1px solid rgba(10,255,178,0.25); border-radius: 24px; padding: 36px; box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 50px rgba(10,255,178,0.06);">
+        <!-- Sliders column -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <!-- Slider 1: Videos/month -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 14px; font-weight: 700; color: var(--text);">📅 Videos per Month</span>
+              <span id="calc-videos-val" style="font-size: 16px; font-weight: 800; color: #0affb2; font-family: monospace;">12 videos</span>
+            </div>
+            <input id="calc-videos" type="range" min="2" max="30" value="12" step="1" oninput="updateCalculator()" 
+              style="width: 100%; accent-color: #0affb2; height: 6px; cursor: pointer; border-radius: 3px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 4px;">
+              <span>2/mo</span><span>12/mo (Recommended)</span><span>30/mo (Daily)</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Views/video -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-size: 14px; font-weight: 700; color: var(--text);">👁️ Average Views per Video</span>
+              <span id="calc-views-val" style="font-size: 16px; font-weight: 800; color: #00d2ff; font-family: monospace;">45,000 views</span>
+            </div>
+            <input id="calc-views" type="range" min="5000" max="300000" value="45000" step="5000" oninput="updateCalculator()" 
+              style="width: 100%; accent-color: #00d2ff; height: 6px; cursor: pointer; border-radius: 3px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 4px;">
+              <span>5K</span><span>45K</span><span>300K+</span>
+            </div>
+          </div>
+
+          <!-- Niche Selector -->
+          <div>
+            <label style="font-size: 14px; font-weight: 700; color: var(--text); display: block; margin-bottom: 10px;">🎯 Channel Niche & RPM</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button class="niche-btn" onclick="setNiche(8, this)" style="background: rgba(255,61,110,0.12); border: 1px solid #ff3d6e; color: white; padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; text-align: left;">
+                🕵️ True Crime ($8 RPM)
+              </button>
+              <button class="niche-btn" onclick="setNiche(12, this)" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; text-align: left;">
+                💻 Tech & Finance ($12 RPM)
+              </button>
+              <button class="niche-btn" onclick="setNiche(6, this)" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; text-align: left;">
+                🎭 Webtoon & Anime ($6 RPM)
+              </button>
+              <button class="niche-btn" onclick="setNiche(7, this)" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; text-align: left;">
+                📜 History & Mystery ($7 RPM)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculated output column -->
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px;">💵 Projected Monthly Income</div>
+            <div id="calc-revenue" style="font-size: 42px; font-weight: 900; background: linear-gradient(90deg, #0affb2, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1; margin-bottom: 4px; font-family: monospace;">
+              $4,320
+            </div>
+            <div id="calc-yearly" style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+              ≈ $51,840 / year in YouTube AdSense
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+              <div style="background: rgba(10,255,178,0.06); border: 1px solid rgba(10,255,178,0.15); border-radius: 12px; padding: 12px;">
+                <div style="font-size: 11px; color: var(--muted); margin-bottom: 2px;">⏰ Hours Saved</div>
+                <div id="calc-hours" style="font-size: 20px; font-weight: 800; color: #0affb2;">144 hrs</div>
+                <div style="font-size: 10px; color: var(--muted);">vs manual editing</div>
+              </div>
+
+              <div style="background: rgba(0,210,255,0.06); border: 1px solid rgba(0,210,255,0.15); border-radius: 12px; padding: 12px;">
+                <div style="font-size: 11px; color: var(--muted); margin-bottom: 2px;">🌐 Global Reach</div>
+                <div id="calc-reach" style="font-size: 20px; font-weight: 800; color: #00d2ff;">9x Multiplier</div>
+                <div style="font-size: 10px; color: var(--muted);">via 9 languages</div>
+              </div>
+            </div>
+          </div>
+
+          <a href="/register" style="background: linear-gradient(135deg, #0affb2, #00d2ff); color: #060a10; text-decoration: none; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 800; text-align: center; display: block; box-shadow: 0 4px 20px rgba(10,255,178,0.3); transition: transform .2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            🚀 Start Building Your Channel Free →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRADITIONAL VS AI COMPARISON ===== -->
+  <section id="compare" style="padding: 80px 24px; position: relative; z-index: 1;">
+    <div style="max-width: 1050px; margin: 0 auto;">
+      <div class="fade-in" style="text-align: center; margin-bottom: 50px;">
+        <div class="section-label">⚖️ The Shift</div>
+        <h2 class="section-title">The old way vs<br><span style="background:linear-gradient(90deg,#ff3d6e,#ff9f43,#0affb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">The Turning Point</span></h2>
+        <p class="section-sub" style="margin: 0 auto;">See why top creators are replacing expensive agencies and complex editing software with our automated AI studio.</p>
+      </div>
+
+      <div class="fade-in" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Left: Old Way -->
+        <div style="background: rgba(255,61,110,0.03); border: 1px solid rgba(255,61,110,0.2); border-radius: 20px; padding: 28px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="font-size: 24px;">❌</span>
+            <div>
+              <div style="font-size: 17px; font-weight: 800; color: #ff8fab;">Traditional YouTube Workflow</div>
+              <div style="font-size: 12px; color: var(--muted);">Slow, expensive, fragmented</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; color: #b8c4db;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #ff3d6e; font-weight: 800;">✕</span>
+              <span><strong>3 to 4 weeks</strong> to produce a single 15-minute documentary</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #ff3d6e; font-weight: 800;">✕</span>
+              <span><strong>$2,500+ / video</strong> spent on voice actors, scriptwriters & editors</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #ff3d6e; font-weight: 800;">✕</span>
+              <span><strong>6 separate tools:</strong> Premiere, Photoshop, Midjourney, ElevenLabs, Notion, CapCut</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #ff3d6e; font-weight: 800;">✕</span>
+              <span><strong>1 language only:</strong> 85% of global YouTube audience missed</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #ff3d6e; font-weight: 800;">✕</span>
+              <span><strong>Manual Shorts:</strong> 3 hours to re-cut vertical clips</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: The Turning Point AI -->
+        <div style="background: linear-gradient(135deg, rgba(13,10,18,0.95), rgba(10,16,24,0.95)); border: 1px solid rgba(10,255,178,0.35); border-radius: 20px; padding: 28px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 40px rgba(10,255,178,0.08);">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--rainbow);"></div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="font-size: 24px;">✨</span>
+            <div>
+              <div style="font-size: 17px; font-weight: 800; color: #0affb2;">The Turning Point AI Studio</div>
+              <div style="font-size: 12px; color: var(--muted);">Automated, instant, multi-language</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; color: white;">
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #0affb2; font-weight: 800;">✓</span>
+              <span><strong>18 seconds</strong> end-to-end generation from idea to video</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #0affb2; font-weight: 800;">✓</span>
+              <span><strong>100% automated:</strong> Claude 3.7 scripts, ElevenLabs voices & Kling clips</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #0affb2; font-weight: 800;">✓</span>
+              <span><strong>All-in-one studio:</strong> Scripting, voice, video, subtitles & BGM in 1 click</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #0affb2; font-weight: 800;">✓</span>
+              <span><strong>9 dubbed languages:</strong> Reach global audiences in Uzbek, Russian, English & more</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="color: #0affb2; font-weight: 800;">✓</span>
+              <span><strong>Auto 9:16 Shorts:</strong> TikTok/Reels ready exported automatically</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CREATOR SUCCESS STORIES ===== -->
+  <section id="testimonials" style="padding: 80px 24px; position: relative; z-index: 1;">
+    <div style="max-width: 1050px; margin: 0 auto;">
+      <div class="fade-in" style="text-align: center; margin-bottom: 50px;">
+        <div class="section-label">⭐ Creator Stories</div>
+        <h2 class="section-title">Built by creators,<br><span style="background:linear-gradient(90deg,#ff9f43,#f9f871,#0affb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">scaling empires daily</span></h2>
+        <p class="section-sub" style="margin: 0 auto;">Join channels that grew from zero to hundreds of thousands of subscribers using The Turning Point.</p>
+      </div>
+
+      <div class="fade-in" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <!-- Review 1 -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#ff3d6e,#ff9f43); display: flex; align-items: center; justify-content: center; font-size: 20px;">🕵️</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 800;">Dark Dossier Files</div>
+                <div style="font-size: 12px; color: #ff8fab;">185K Subs · True Crime</div>
+              </div>
+            </div>
+            <p style="font-size: 13.5px; color: #d0d7e5; line-height: 1.6; font-style: italic;">
+              "We went from publishing 1 video a week to daily uploads. The multi-character voice acting gave our documentaries Netflix-level production value without hiring actors."
+            </p>
+          </div>
+          <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #0affb2; font-weight: 700;">+340% View Growth</span>
+            <span style="color: var(--muted);">30-day result</span>
+          </div>
+        </div>
+
+        <!-- Review 2 -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#c77dff,#ff6ec7); display: flex; align-items: center; justify-content: center; font-size: 20px;">🎭</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 800;">Manhwa Recaps Global</div>
+                <div style="font-size: 12px; color: #c77dff;">290K Subs · Webtoon</div>
+              </div>
+            </div>
+            <p style="font-size: 13.5px; color: #d0d7e5; line-height: 1.6; font-style: italic;">
+              "Webtoon Mode is pure magic. The dramatic speech bubbles and action line scenes get over 85% average retention on YouTube. Shorts get millions of views on TikTok."
+            </p>
+          </div>
+          <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #0affb2; font-weight: 700;">6.2M Shorts Views</span>
+            <span style="color: var(--muted);">TikTok & YouTube</span>
+          </div>
+        </div>
+
+        <!-- Review 3 -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#00d2ff,#0affb2); display: flex; align-items: center; justify-content: center; font-size: 20px;">🌍</div>
+              <div>
+                <div style="font-size: 15px; font-weight: 800;">Tarixiy Voqealar</div>
+                <div style="font-size: 12px; color: #00d2ff;">140K Subs · O'zbekiston</div>
+              </div>
+            </div>
+            <p style="font-size: 13.5px; color: #d0d7e5; line-height: 1.6; font-style: italic;">
+              "Bitta videoni tayyorlab, bir vaqtning o'zida o'zbek, rus va ingliz tillariga dublyaj qilamiz. 1-click YouTube publishing orqali hamma kanalimizga avtomatik yuklanadi."
+            </p>
+          </div>
+          <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 12px;">
+            <span style="color: #0affb2; font-weight: 700;">$5,800/mo Revenue</span>
+            <span style="color: var(--muted);">AdSense + Dubs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ACCORDION ===== -->
+  <section id="faq" style="padding: 80px 24px; position: relative; z-index: 1; background: linear-gradient(180deg, transparent, rgba(168,85,247,0.02), transparent);">
+    <div style="max-width: 860px; margin: 0 auto;">
+      <div class="fade-in" style="text-align: center; margin-bottom: 50px;">
+        <div class="section-label">❓ Common Questions</div>
+        <h2 class="section-title">Frequently Asked<br><span style="background:linear-gradient(90deg,#ff3d6e,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Questions</span></h2>
+        <p class="section-sub" style="margin: 0 auto;">Everything you need to know about YouTube compliance, copyright, and platform capabilities.</p>
+      </div>
+
+      <div class="fade-in" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- FAQ 1 -->
+        <div class="faq-item" style="background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s;">
+          <button onclick="toggleFaq(this)" style="width: 100%; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; color: white; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left;">
+            <span>Can YouTube channels made with this AI get monetized?</span>
+            <span class="faq-arrow" style="font-size: 16px; color: var(--muted); transition: transform .2s;">▼</span>
+          </button>
+          <div class="faq-answer" style="display: none; padding: 0 20px 18px; font-size: 13.5px; color: #b8c4db; line-height: 1.6;">
+            <strong>Yes, 100%.</strong> YouTube allows and monetizes AI-assisted content as long as it provides real educational, entertainment, or storytelling value. The Turning Point creates full cinematic scripts with multi-character voice acting and original storyboarded visuals, strictly complying with the YouTube Partner Program guidelines.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item" style="background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s;">
+          <button onclick="toggleFaq(this)" style="width: 100%; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; color: white; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left;">
+            <span>Do I own full commercial copyright to the generated videos?</span>
+            <span class="faq-arrow" style="font-size: 16px; color: var(--muted); transition: transform .2s;">▼</span>
+          </button>
+          <div class="faq-answer" style="display: none; padding: 0 20px 18px; font-size: 13.5px; color: #b8c4db; line-height: 1.6;">
+            <strong>Yes.</strong> You own 100% of all generated scripts, synthesized audio tracks, thumbnails, and compiled MP4 videos. You are free to monetize them on YouTube, TikTok, Facebook, Instagram, or sell them to clients.
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item" style="background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s;">
+          <button onclick="toggleFaq(this)" style="width: 100%; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; color: white; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left;">
+            <span>How does 1-Click YouTube Publishing work?</span>
+            <span class="faq-arrow" style="font-size: 16px; color: var(--muted); transition: transform .2s;">▼</span>
+          </button>
+          <div class="faq-answer" style="display: none; padding: 0 20px 18px; font-size: 13.5px; color: #b8c4db; line-height: 1.6;">
+            Our studio connects directly to the official Google YouTube Data API v3. Once your video is approved in the review step, you can hit "Publish to YouTube", set visibility (Public, Unlisted, or Scheduled), and the system automatically uploads the MP4, sets the AI-generated title, description, SEO tags, and attaches the 1280×720 thumbnail.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item" style="background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s;">
+          <button onclick="toggleFaq(this)" style="width: 100%; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; color: white; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left;">
+            <span>Can I use my own ElevenLabs or OpenAI API keys?</span>
+            <span class="faq-arrow" style="font-size: 16px; color: var(--muted); transition: transform .2s;">▼</span>
+          </button>
+          <div class="faq-answer" style="display: none; padding: 0 20px 18px; font-size: 13.5px; color: #b8c4db; line-height: 1.6;">
+            <strong>Yes!</strong> In your personal User Settings (/settings), you can add your own ElevenLabs, Anthropic, Google, and Kling API keys. They are securely encrypted in your private database profile and never shared with other users.
+          </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-item" style="background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s;">
+          <button onclick="toggleFaq(this)" style="width: 100%; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; background: none; border: none; color: white; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; text-align: left;">
+            <span>Which languages are supported for automatic dubbing?</span>
+            <span class="faq-arrow" style="font-size: 16px; color: var(--muted); transition: transform .2s;">▼</span>
+          </button>
+          <div class="faq-answer" style="display: none; padding: 0 20px 18px; font-size: 13.5px; color: #b8c4db; line-height: 1.6;">
+            We support 9 global languages with native-accent ElevenLabs voices: Uzbek (🇺🇿), Russian (🇷🇺), English (🇬🇧), Spanish (🇪🇸), German (🇩🇪), French (🇫🇷), Turkish (🇹🇷), Japanese (🇯🇵), and Korean (🇰🇷). Subtitles are synchronized automatically for each language.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="cta-section">
     <div class="cta-glow"></div>
@@ -2348,8 +2743,185 @@
       }, { threshold: 0.15 });
       panels.forEach(p => panelObserver.observe(p));
     }
-    initWebtoonPanels();
+    // ===== SANDBOX PITCH GENERATOR =====
+    const SANDBOX_DATA = {
+      "The Secret Nuclear Decision of 1983": {
+        title: "The Man Who Decided NOT to End the World — Stanislav Petrov (1983)",
+        hook: "At 00:14 on September 26, 1983, five nuclear sirens went off inside a secret Soviet bunker. One man had 120 seconds to choose between launching World War 3... or trusting his gut.",
+        tp: "Petrov noticed the radar claimed only 5 missiles were launched. Realizing a true first-strike would be hundreds of missiles, he declared it a false alarm — defying military orders and saving civilization."
+      },
+      "✈️ The Vanishing of Malaysia Airlines Flight 370": {
+        title: "MH370: The 38 Minutes of Silence That Shocked Aviation History",
+        hook: "At 1:19 AM over the South China Sea, Captain Zaharie signed off with: 'Good night, Malaysian three seven zero.' Seconds later, the transponder vanished — and 239 people disappeared forever.",
+        tp: "Military primary radar revealed the Boeing 777 made a sharp 180-degree left turn toward the desolate Southern Indian Ocean, flying for 6 hours entirely off-grid in total radio silence."
+      },
+      "🍎 The 1997 Secret Meeting That Saved Apple": {
+        title: "The Day Bill Gates Saved Apple From Total Bankruptcy (1997)",
+        hook: "In July 1997, Apple was exactly 90 days away from going completely broke. Steve Jobs walked onto the Macworld stage, dialed his fiercest rival, and did the unthinkable.",
+        tp: "Jobs announced a $150 million investment from Microsoft and guaranteed Office on Mac. The crowd booed, but the cash injection bought Apple the exact runway needed to build the iMac and iPod."
+      },
+      "📜 Alisher Navoiy: Tilni va Millatni Qutqargan Shoir": {
+        title: "Alisher Navoiy: O'zbek Tilini Tarix Sahnasidan O'chishdan Qutqargan Dahoning Qismati",
+        hook: "XV asrda turkiy tilda yozish qoloqlik sanalar, hamma forsiyda ijod qilardi. Birgina inson butun saroy a'yonlariga qarshi chiqib, ona tilimizning buyuk qudratini isbotladi.",
+        tp: "Navoiy 'Muhokamat ul-Lug'atayn' asarini yozib, turkiy tilning fors tilidan boyroq ekanligini 100 dan ortiq aniq dalillar bilan isbotlab, buyuk 'Xamsa'ni turkiyda yaratdi."
+      },
+      "💣 The 1983 Soviet Officer Who Prevented World War 3": {
+        title: "The 120 Seconds That Almost Destroyed Earth: The Petrov Incident",
+        hook: "Red flashing lights: 'MISSILE ATTACK DETECTED'. The protocol demanded an immediate retaliatory launch of 1,000 nuclear warheads. Lieutenant Colonel Petrov held the red phone.",
+        tp: "Defying 15 strict military protocols, Petrov classified the computerized warning as a system glitch caused by rare sunlight reflections on high-altitude clouds."
+      }
+    };
+
+    function setSandboxPrompt(text) {
+      document.getElementById('sandbox-input').value = text;
+      generateSandboxPitch();
+    }
+
+    function generateSandboxPitch() {
+      const input = document.getElementById('sandbox-input').value.trim();
+      if (!input) return;
+      const btn = document.getElementById('sandbox-btn');
+      btn.innerHTML = '<span>⏳ Synthesizing...</span>';
+      btn.style.opacity = '0.7';
+
+      setTimeout(() => {
+        let match = SANDBOX_DATA[input];
+        if (!match) {
+          match = {
+            title: `The Untold Story Behind "${input}" | True Crime Documentary`,
+            hook: `Everyone thought they knew the full story of ${input}. But newly unsealed documents reveal a secret decision that changed everything.`,
+            tp: `A whistleblower came forward with encrypted audio recordings, proving the official narrative was constructed to cover up the single turning point.`
+          };
+        }
+        document.getElementById('sandbox-title').textContent = match.title;
+        document.getElementById('sandbox-hook').textContent = `"${match.hook}"`;
+        document.getElementById('sandbox-tp').textContent = match.tp;
+        document.getElementById('sandbox-create-btn').href = `/create?topic=${encodeURIComponent(match.title)}`;
+
+        btn.innerHTML = '<span>✨ Generate AI Pitch</span>';
+        btn.style.opacity = '1';
+
+        const res = document.getElementById('sandbox-result');
+        res.style.opacity = '0';
+        res.style.transform = 'translateY(8px)';
+        res.style.transition = 'all .3s ease';
+        requestAnimationFrame(() => {
+          res.style.opacity = '1';
+          res.style.transform = 'translateY(0)';
+        });
+      }, 400);
+    }
+
+    // ===== ROI & REVENUE CALCULATOR =====
+    let currentRpm = 8;
+
+    function setNiche(rpm, btn) {
+      currentRpm = rpm;
+      document.querySelectorAll('.niche-btn').forEach(b => {
+        b.style.background = 'rgba(255,255,255,0.03)';
+        b.style.borderColor = 'rgba(255,255,255,0.08)';
+        b.style.color = 'var(--muted)';
+      });
+      btn.style.background = 'rgba(10,255,178,0.12)';
+      btn.style.borderColor = '#0affb2';
+      btn.style.color = 'white';
+      updateCalculator();
+    }
+
+    function updateCalculator() {
+      const videos = parseInt(document.getElementById('calc-videos').value);
+      const views = parseInt(document.getElementById('calc-views').value);
+
+      document.getElementById('calc-videos-val').textContent = `${videos} videos`;
+      document.getElementById('calc-views-val').textContent = `${views.toLocaleString()} views`;
+
+      // Revenue = (videos * views / 1000) * RPM
+      const monthlyViews = videos * views;
+      const monthlyRevenue = Math.round((monthlyViews / 1000) * currentRpm);
+      const yearlyRevenue = monthlyRevenue * 12;
+      const hoursSaved = videos * 12; // ~12 hours manual editing saved per video
+
+      document.getElementById('calc-revenue').textContent = `$${monthlyRevenue.toLocaleString()}`;
+      document.getElementById('calc-yearly').textContent = `≈ $${yearlyRevenue.toLocaleString()} / year in YouTube AdSense`;
+      document.getElementById('calc-hours').textContent = `${hoursSaved} hrs`;
+    }
+
+    // ===== FAQ ACCORDION =====
+    function toggleFaq(button) {
+      const item = button.parentElement;
+      const answer = item.querySelector('.faq-answer');
+      const arrow = button.querySelector('.faq-arrow');
+      const isOpen = answer.style.display === 'block';
+
+      // Close all FAQs first
+      document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+      document.querySelectorAll('.faq-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
+      document.querySelectorAll('.faq-item').forEach(i => i.style.borderColor = 'var(--border)');
+
+      if (!isOpen) {
+        answer.style.display = 'block';
+        arrow.style.transform = 'rotate(180deg)';
+        item.style.borderColor = 'rgba(255,61,110,0.4)';
+      }
+    }
+
+    // ===== LIVE SOCIAL PROOF TOAST ENGINE =====
+    const LIVE_EVENTS = [
+      { avatar: '🇺🇿', text: '<strong>Farrukh</strong> (Tashkent) generated "1986 Chernobyl Hero"', time: 'just now' },
+      { avatar: '🇬🇧', text: '<strong>Sarah</strong> (London) published 9:16 Short to YouTube', time: '1m ago' },
+      { avatar: '🇯🇵', text: '<strong>Kenji</strong> (Tokyo) dubbed video into 9 languages', time: '2m ago' },
+      { avatar: '🇺🇸', text: '<strong>Alex</strong> (New York) generated 30-day AI calendar', time: '3m ago' },
+      { avatar: '🇪🇸', text: '<strong>Mateo</strong> (Madrid) rendered 1080p documentary', time: '4m ago' },
+      { avatar: '🇷🇺', text: '<strong>Dmitry</strong> (Moscow) created Webtoon Episode #04', time: '5m ago' }
+    ];
+
+    let eventIdx = 0;
+    function showLiveToast() {
+      const toast = document.getElementById('live-toast');
+      if (!toast) return;
+      const ev = LIVE_EVENTS[eventIdx % LIVE_EVENTS.length];
+      eventIdx++;
+
+      document.getElementById('toast-avatar').textContent = ev.avatar;
+      document.getElementById('toast-text').innerHTML = ev.text;
+      document.getElementById('toast-time').textContent = ev.time;
+
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(16px)';
+      }, 5000);
+    }
+
+    // Start live toast loop
+    setTimeout(() => {
+      showLiveToast();
+      setInterval(showLiveToast, 9000);
+    }, 3000);
 
   </script>
+
+  <!-- FLOATING SOCIAL PROOF TOAST (Bottom Left) -->
+  <div id="live-toast" style="position: fixed; bottom: 24px; left: 24px; z-index: 99; background: rgba(13,13,18,0.95); border: 1px solid rgba(255,61,110,0.35); border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.6); backdrop-filter: blur(16px); opacity: 0; transform: translateY(16px); transition: all .4s cubic-bezier(0.16, 1, 0.3, 1); max-width: 360px; pointer-events: none;">
+    <div id="toast-avatar" style="font-size: 22px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">🚀</div>
+    <div style="font-size: 12.5px; line-height: 1.35; color: var(--text);">
+      <div id="toast-text" style="color: #e2e8f0;">User generated video</div>
+      <div id="toast-time" style="font-size: 10.5px; color: var(--muted); margin-top: 2px;">just now</div>
+    </div>
+  </div>
+
+  <!-- FLOATING QUICK CTA BAR (Bottom Right) -->
+  <div id="floating-bar" style="position: fixed; bottom: 24px; right: 24px; z-index: 99; display: flex; gap: 8px; background: rgba(13,13,18,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 6px 8px; backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <a href="#try-ai" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+      ⚡ Try AI Prompt
+    </a>
+    <a href="/register" style="background: linear-gradient(135deg, #ff3d6e, #ff9f43); color: white; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 16px rgba(255,61,110,0.4); transition: transform .15s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
+      🚀 Create Free Video →
+    </a>
+  </div>
+
 </body>
 </html>
+
