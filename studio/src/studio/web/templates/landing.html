@@ -1328,6 +1328,431 @@
     </div>
   </section>
 
+  <!-- ===== OUTPUT SHOWCASE ===== -->
+  <section id="output" style="padding: 80px 24px; position: relative; z-index: 1; background: linear-gradient(180deg, transparent, rgba(0,210,255,0.02), transparent);">
+    <div style="max-width: 1100px; margin: 0 auto;">
+
+      <div class="fade-in" style="text-align: center; margin-bottom: 56px;">
+        <div class="section-label">🎁 The Output</div>
+        <h2 class="section-title">This is what comes<br>out the other side</h2>
+        <p class="section-sub" style="margin: 0 auto;">One pipeline run produces a full YouTube video, 9:16 Shorts, dubbed versions in 9 languages, and a complete SEO package — automatically.</p>
+      </div>
+
+      <!-- TOP: YouTube player mockup + channel info -->
+      <div class="fade-in" style="background: #0a0a0f; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(0,210,255,0.04);">
+        <!-- YouTube-like header bar -->
+        <div style="background: #0d0d14; padding: 10px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:18px;">▶</span>
+          <span style="font-size:13px; color:var(--muted); font-family:monospace;">youtube.com/watch?v=xK2m9PqR7dE</span>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#28c840;"></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 340px; gap:0;">
+          <!-- Video player area -->
+          <div>
+            <!-- Thumbnail / player -->
+            <div id="yt-player" style="background: linear-gradient(135deg, #1a0033, #4a0080, #ff003c); position:relative; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden;" onclick="playVideo()">
+              <!-- Thumbnail text overlay -->
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8)); z-index:1;"></div>
+              <div style="position:absolute; bottom:16px; left:16px; z-index:2; max-width:80%;">
+                <div style="font-size:clamp(14px,2.5vw,22px); font-weight:900; color:white; text-shadow:0 2px 12px rgba(0,0,0,0.9); line-height:1.2; margin-bottom:6px;">He Risked Everything<br><span style="color:#ffcc00;">to Expose Them</span></div>
+              </div>
+              <div style="position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.7); color:#ff3d6e; font-size:11px; font-weight:800; padding:3px 8px; border-radius:4px; z-index:2;">14:32</div>
+              <!-- Big play button -->
+              <div id="play-btn-overlay" style="position:relative; z-index:3; width:70px; height:70px; background:rgba(255,255,255,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 0 40px rgba(255,255,255,0.3); transition:transform .2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                <span style="font-size:28px; color:#1a1a1a; margin-left:4px;">▶</span>
+              </div>
+              <!-- Waveform animation (shows when playing) -->
+              <div id="yt-waveform" style="display:none; position:absolute; bottom:0; left:0; right:0; height:60px; background:linear-gradient(180deg,transparent,rgba(0,0,0,0.6)); align-items:flex-end; justify-content:center; gap:2px; padding:8px; z-index:2;"></div>
+            </div>
+            <!-- Progress bar -->
+            <div style="height:3px; background:rgba(255,255,255,0.08);">
+              <div id="progress-bar" style="height:3px; background:linear-gradient(90deg,#ff3d6e,#ff9f43); width:0%; transition:width .5s linear;"></div>
+            </div>
+            <!-- Player controls -->
+            <div style="padding:10px 16px; display:flex; align-items:center; gap:12px; background:#0c0c14;">
+              <button id="play-control" onclick="playVideo()" style="background:none;border:none;color:white;font-size:16px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='none'">▶</button>
+              <span style="font-size:12px; color:var(--muted); font-family:monospace;" id="time-display">0:00 / 14:32</span>
+              <div style="flex:1; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; cursor:pointer;"><div id="mini-progress" style="height:3px;background:linear-gradient(90deg,#ff3d6e,#ff9f43);width:0%;border-radius:2px;"></div></div>
+              <span style="font-size:12px; color:var(--muted);">🔊</span>
+              <span style="font-size:12px; color:var(--muted);">⛶</span>
+            </div>
+          </div>
+
+          <!-- Sidebar: video info & stats -->
+          <div style="padding:20px; border-left:1px solid rgba(255,255,255,0.05);">
+            <div style="font-size:15px; font-weight:700; line-height:1.4; margin-bottom:12px;">He Risked Everything to Expose Them — The Full Story | True Crime Documentary</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+              <span style="background:rgba(255,61,110,0.15); border:1px solid rgba(255,61,110,0.3); color:#ff8fab; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700;">🔥 VIRAL</span>
+              <span style="font-size:12px; color:var(--muted);">Published just now</span>
+            </div>
+
+            <!-- View counter (animated) -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px; margin-bottom:12px;">
+              <div style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">📊 Live Performance</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div>
+                  <div class="counter" data-target="142837" style="font-size:20px; font-weight:800; color:#ff3d6e; font-family:monospace;">0</div>
+                  <div style="font-size:10px; color:var(--muted);">Views</div>
+                </div>
+                <div>
+                  <div class="counter" data-target="8941" style="font-size:20px; font-weight:800; color:#ff9f43; font-family:monospace;">0</div>
+                  <div style="font-size:10px; color:var(--muted);">Likes</div>
+                </div>
+                <div>
+                  <div class="counter" data-target="94" style="font-size:20px; font-weight:800; color:#0affb2; font-family:monospace;">0</div>
+                  <div style="font-size:10px; color:var(--muted);">% CTR</div>
+                </div>
+                <div>
+                  <div style="font-size:20px; font-weight:800; color:#00d2ff; font-family:monospace;">9:14</div>
+                  <div style="font-size:10px; color:var(--muted);">Avg Watch</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Channel info -->
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid rgba(255,255,255,0.05);">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff3d6e,#ff9f43);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📺</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;">The Turning Point</div>
+                <div style="font-size:11px;color:var(--muted);">52.4K subscribers</div>
+              </div>
+              <button style="margin-left:auto;background:#ff3d6e;color:white;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Subscribe</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM GRID: Shorts + Languages + Package -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:8px;" class="fade-in">
+
+        <!-- 9:16 Shorts Preview -->
+        <div style="background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+          <div style="padding:14px 16px; border-bottom:1px solid var(--border); display:flex;align-items:center;gap:8px;">
+            <span>📱</span>
+            <span style="font-size:13px;font-weight:700;">9:16 Short</span>
+            <span style="margin-left:auto;background:rgba(255,61,110,0.15);border:1px solid rgba(255,61,110,0.3);color:#ff8fab;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">TikTok Ready</span>
+          </div>
+          <!-- Vertical video mockup -->
+          <div style="display:flex;justify-content:center;padding:20px;">
+            <div style="width:110px;background:linear-gradient(180deg,#1a001a,#330033,#660066);border-radius:12px;aspect-ratio:9/16;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(255,61,110,0.2);border:1px solid rgba(255,61,110,0.2);">
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,0.85));"></div>
+              <div style="position:absolute;top:12px;left:0;right:0;text-align:center;">
+                <div style="font-size:24px;">🔥</div>
+              </div>
+              <div style="position:absolute;bottom:12px;left:8px;right:8px;">
+                <div style="font-size:8px;font-weight:800;color:white;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,0.9);">HE RISKED EVERYTHING<br><span style="color:#ffcc00;">THE TRUTH REVEALED</span></div>
+                <div style="margin-top:6px;display:flex;gap:3px;flex-wrap:wrap;">
+                  <span style="background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:3px;font-size:7px;font-weight:700;">#truecrime</span>
+                  <span style="background:rgba(255,255,255,0.15);color:white;padding:1px 5px;border-radius:3px;font-size:7px;font-weight:700;">#viral</span>
+                </div>
+              </div>
+              <!-- Kinetic caption line -->
+              <div style="position:absolute;bottom:52px;left:4px;right:4px;background:rgba(255,204,0,0.9);padding:2px 4px;border-radius:3px;text-align:center;">
+                <span style="font-size:7px;font-weight:900;color:#1a1a00;">They told him to stay silent</span>
+              </div>
+              <!-- Play indicator -->
+              <div id="shorts-play" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;background:rgba(255,255,255,0.85);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:14px;color:#1a1a1a;margin-left:2px;">▶</span>
+              </div>
+            </div>
+          </div>
+          <div style="padding:0 16px 16px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">59s · Auto-generated from main video</div>
+            <button style="background:linear-gradient(135deg,#ff3d6e,#ff9f43);color:white;border:none;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%;font-family:inherit;">⬇ Download Short</button>
+          </div>
+        </div>
+
+        <!-- Multi-Language Dubbing -->
+        <div style="background:var(--panel); border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+          <div style="padding:14px 16px; border-bottom:1px solid var(--border); display:flex;align-items:center;gap:8px;">
+            <span>🌍</span>
+            <span style="font-size:13px;font-weight:700;">Dubbed Versions</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--muted);">9 languages</span>
+          </div>
+          <div style="padding:12px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <!-- Each language row -->
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);transition:all .2s ease;cursor:pointer;" onmouseover="this.style.borderColor='rgba(255,61,110,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.04)'">
+                <span style="font-size:16px;">🇺🇿</span><span style="font-size:12px;font-weight:600;flex:1;">O'zbekcha</span>
+                <div style="display:flex;gap:2px;align-items:center;height:16px;">${Array.from({length:12},(_,i)=>`<div style="width:2px;height:${Math.random()*12+4}px;background:rgba(255,61,110,0.5);border-radius:1px;"></div>`).join('')}</div>
+                <span style="font-size:10px;background:rgba(10,255,178,0.15);color:#0affb2;padding:1px 6px;border-radius:3px;font-weight:700;">✓</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;" onmouseover="this.style.borderColor='rgba(0,210,255,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.04)'">
+                <span style="font-size:16px;">🇷🇺</span><span style="font-size:12px;font-weight:600;flex:1;">Русский</span>
+                <div style="display:flex;gap:2px;align-items:center;height:16px;">${Array.from({length:12},(_,i)=>`<div style="width:2px;height:${Math.random()*12+4}px;background:rgba(0,210,255,0.5);border-radius:1px;"></div>`).join('')}</div>
+                <span style="font-size:10px;background:rgba(10,255,178,0.15);color:#0affb2;padding:1px 6px;border-radius:3px;font-weight:700;">✓</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;" onmouseover="this.style.borderColor='rgba(255,159,67,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.04)'">
+                <span style="font-size:16px;">🇬🇧</span><span style="font-size:12px;font-weight:600;flex:1;">English</span>
+                <div style="display:flex;gap:2px;align-items:center;height:16px;">${Array.from({length:12},(_,i)=>`<div style="width:2px;height:${Math.random()*12+4}px;background:rgba(255,159,67,0.5);border-radius:1px;"></div>`).join('')}</div>
+                <span style="font-size:10px;background:rgba(10,255,178,0.15);color:#0affb2;padding:1px 6px;border-radius:3px;font-weight:700;">✓</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;" onmouseover="this.style.borderColor='rgba(199,119,255,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.04)'">
+                <span style="font-size:16px;">🇯🇵</span><span style="font-size:12px;font-weight:600;flex:1;">日本語</span>
+                <div style="display:flex;gap:2px;align-items:center;height:16px;">${Array.from({length:12},(_,i)=>`<div style="width:2px;height:${Math.random()*12+4}px;background:rgba(199,119,255,0.5);border-radius:1px;"></div>`).join('')}</div>
+                <span style="font-size:10px;background:rgba(10,255,178,0.15);color:#0affb2;padding:1px 6px;border-radius:3px;font-weight:700;">✓</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 8px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.04);">
+                <span style="font-size:14px;color:var(--muted);">+ 5 more</span>
+                <span style="font-size:11px;color:var(--muted);margin-left:auto;">ES · DE · FR · TR · KO</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Output Package -->
+        <div style="background:var(--panel); border:1px solid rgba(10,255,178,0.2); border-radius:16px; overflow:hidden; position:relative;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ff3d6e,#ff9f43,#f9f871,#0affb2,#00d2ff,#c77dff);"></div>
+          <div style="padding:14px 16px; border-bottom:1px solid var(--border); display:flex;align-items:center;gap:8px; margin-top:3px;">
+            <span>📦</span>
+            <span style="font-size:13px;font-weight:700;">Output Package</span>
+            <span style="margin-left:auto;background:rgba(10,255,178,0.12);border:1px solid rgba(10,255,178,0.25);color:#0affb2;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;">COMPLETE</span>
+          </div>
+          <div style="padding:16px; display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,61,110,0.05);border-radius:8px;border:1px solid rgba(255,61,110,0.15);">
+              <span style="font-size:16px;">🎬</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;">Main Video</div>
+                <div style="font-size:10px;color:var(--muted);">14:32 min · 1080p · MP4</div>
+              </div>
+              <span style="margin-left:auto;font-size:18px;">⬇</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,159,67,0.05);border-radius:8px;border:1px solid rgba(255,159,67,0.15);">
+              <span style="font-size:16px;">📱</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;">9:16 Short</div>
+                <div style="font-size:10px;color:var(--muted);">59s · Vertical · MP4</div>
+              </div>
+              <span style="margin-left:auto;font-size:18px;">⬇</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(199,119,255,0.05);border-radius:8px;border:1px solid rgba(199,119,255,0.15);">
+              <span style="font-size:16px;">🖼️</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;">3 Thumbnails</div>
+                <div style="font-size:10px;color:var(--muted);">1280×720 · JPG</div>
+              </div>
+              <span style="margin-left:auto;font-size:18px;">⬇</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(0,210,255,0.05);border-radius:8px;border:1px solid rgba(0,210,255,0.15);">
+              <span style="font-size:16px;">🌍</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;">9 Dubbed Versions</div>
+                <div style="font-size:10px;color:var(--muted);">Each with native captions</div>
+              </div>
+              <span style="margin-left:auto;font-size:18px;">⬇</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(10,255,178,0.05);border-radius:8px;border:1px solid rgba(10,255,178,0.15);">
+              <span style="font-size:16px;">📈</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;">SEO Package</div>
+                <div style="font-size:10px;color:var(--muted);">5 titles · 20 tags · description</div>
+              </div>
+              <span style="margin-left:auto;font-size:18px;">📋</span>
+            </div>
+            <button onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})" style="margin-top:4px;background:linear-gradient(135deg,#ff3d6e,#ff9f43);color:white;border:none;padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;font-family:inherit;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">🚀 See It Build Live ↑</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ===== WEBTOON SHOWCASE ===== -->
+  <section id="webtoon" style="padding: 80px 24px; position: relative; z-index: 1; overflow: hidden;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:500px;background:radial-gradient(ellipse at 30% 50%, rgba(199,119,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(255,61,110,0.06) 0%, transparent 60%);pointer-events:none;"></div>
+    <div style="max-width:1100px; margin:0 auto;">
+      <div class="fade-in" style="text-align:center; margin-bottom:56px;">
+        <div class="section-label">🎭 Webtoon Mode</div>
+        <h2 class="section-title">Manhwa-style drama.<br><span style="background:linear-gradient(90deg,#c77dff,#ff6ec7,#ff3d6e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Panel by panel.</span></h2>
+        <p class="section-sub" style="margin:0 auto;">Switch to Webtoon Mode and the AI generates cinematic comic-panel style videos — each scene rendered as a dramatic manhwa illustration with dialogue bubbles, action lines, and character close-ups.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 340px; gap:32px; align-items:start;" class="fade-in">
+
+        <!-- LEFT: Webtoon Reader mockup -->
+        <div style="background:#08060c; border:1px solid rgba(199,119,255,0.2); border-radius:20px; overflow:hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 60px rgba(199,119,255,0.08);">
+          <div style="background:#0e0b14; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#febc2e;"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:#28c840;"></div>
+            <span style="font-size:12px;color:var(--muted);margin-left:6px;font-family:monospace;">🎭 Episode 01 — He Risked Everything</span>
+          </div>
+          <div style="max-height:600px; overflow-y:auto;" id="webtoon-scroll">
+
+            <!-- PANEL 1: Title splash -->
+            <div class="webtoon-panel" data-delay="0" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#0d0015,#1a0030,#0d0015);min-height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:2px solid rgba(199,119,255,0.15);">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent,transparent 8px,rgba(199,119,255,0.03) 8px,rgba(199,119,255,0.03) 9px);"></div>
+              <div style="position:relative;z-index:1;text-align:center;padding:32px 20px;">
+                <div style="font-size:9px;letter-spacing:.25em;color:#c77dff;text-transform:uppercase;font-weight:700;margin-bottom:10px;">THE TURNING POINT · EPISODE 01</div>
+                <div style="font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.05;color:white;text-shadow:0 0 40px rgba(199,119,255,0.6),0 4px 20px rgba(0,0,0,0.9);">He Risked<br><span style="background:linear-gradient(90deg,#ff3d6e,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Everything</span></div>
+                <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4);font-style:italic;">to Expose Them</div>
+              </div>
+            </div>
+
+            <!-- PANEL 2: Night city establishing shot -->
+            <div class="webtoon-panel" data-delay="120" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#060e1a,#0c1a2e);min-height:260px;overflow:hidden;border-bottom:2px solid rgba(255,255,255,0.04);">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(0,210,255,0.015) 40px,rgba(0,210,255,0.015) 41px);"></div>
+              <div style="position:absolute;top:24px;right:48px;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.95),rgba(200,220,255,0.5) 50%,transparent 70%);box-shadow:0 0 40px rgba(200,220,255,0.4);"></div>
+              <div style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:flex-end;gap:2px;">
+                <div style="flex:1;background:#060a10;height:70px;"></div>
+                <div style="flex:1.6;background:#060a10;height:130px;position:relative;"><div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#ff9f43;border-radius:50%;box-shadow:0 0 8px #ff9f43;"></div></div>
+                <div style="flex:0.8;background:#060a10;height:55px;"></div>
+                <div style="flex:2;background:#060a10;height:170px;position:relative;"><div style="position:absolute;top:20px;width:100%;display:flex;justify-content:space-around;padding:0 8px;"><div style="width:3px;height:3px;background:#00d2ff;border-radius:50%;box-shadow:0 0 5px #00d2ff;"></div><div style="width:3px;height:3px;background:#00d2ff;border-radius:50%;box-shadow:0 0 5px #00d2ff;"></div></div></div>
+                <div style="flex:0.7;background:#060a10;height:85px;"></div>
+                <div style="flex:1.4;background:#060a10;height:110px;"></div>
+                <div style="flex:1;background:#060a10;height:90px;"></div>
+              </div>
+              <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:2;">
+                <div style="font-size:11px;color:rgba(0,210,255,0.65);font-style:italic;font-weight:600;">Seoul, South Korea · 3:47 AM</div>
+              </div>
+            </div>
+
+            <!-- PANEL 3: Hero dialogue -->
+            <div class="webtoon-panel" data-delay="240" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(135deg,#150008,#250015);min-height:280px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;border-bottom:2px solid rgba(255,61,110,0.2);">
+              <div style="position:absolute;inset:0;background:conic-gradient(from 45deg at 80% 30%,transparent 0deg,rgba(255,61,110,0.04) 30deg,transparent 60deg,transparent 360deg);"></div>
+              <div style="position:absolute;right:0;top:0;bottom:0;width:42%;background:linear-gradient(180deg,#2a0015,#3d0020);">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;opacity:0.35;">🕵️</div>
+                <div style="position:absolute;inset:0;background:linear-gradient(90deg,#150008,transparent 40%);"></div>
+              </div>
+              <div style="position:relative;z-index:2;margin:28px 20px 0;">
+                <div style="background:white;border-radius:12px 12px 12px 4px;padding:14px 18px;display:inline-block;max-width:65%;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+                  <div style="font-size:14px;font-weight:800;color:#1a0008;line-height:1.4;">"They told me to<br>stay silent."</div>
+                  <div style="position:absolute;bottom:-10px;left:14px;width:0;height:0;border-left:10px solid transparent;border-right:6px solid transparent;border-top:10px solid white;"></div>
+                </div>
+              </div>
+              <div style="position:relative;z-index:2;margin:0 20px 28px;text-align:right;">
+                <div style="background:rgba(255,61,110,0.1);border:1px solid rgba(255,61,110,0.4);border-radius:12px 4px 12px 12px;padding:10px 14px;display:inline-block;max-width:55%;">
+                  <div style="font-size:11px;color:#ff8fab;font-style:italic;line-height:1.4;">"But I had the<br>documents."</div>
+                </div>
+              </div>
+              <div style="position:absolute;top:50%;left:10px;transform:translateY(-50%) rotate(-8deg);font-size:30px;font-weight:900;color:rgba(255,61,110,0.12);font-style:italic;letter-spacing:-1px;">CRASH</div>
+            </div>
+
+            <!-- PANEL 4: Split confrontation -->
+            <div class="webtoon-panel" data-delay="360" style="opacity:0;transform:translateY(20px);transition:all .5s ease;display:grid;grid-template-columns:1fr 1fr;min-height:200px;border-bottom:2px solid rgba(255,255,255,0.04);">
+              <div style="background:linear-gradient(135deg,#001520,#003050);position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;border-right:3px solid #0a0a0a;">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:0.35;">👔</div>
+                <div style="position:relative;z-index:1;max-width:90%;">
+                  <div style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.4);border-radius:8px 8px 8px 2px;padding:8px 10px;">
+                    <div style="font-size:11px;color:#00d2ff;font-weight:700;line-height:1.4;">"You have no idea<br>who you're dealing with."</div>
+                  </div>
+                </div>
+                <div style="position:absolute;top:10px;right:10px;font-size:14px;color:rgba(0,210,255,0.5);">💢</div>
+              </div>
+              <div style="background:linear-gradient(135deg,#200010,#400020);position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;">
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:0.35;">🧑‍💼</div>
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 6px,rgba(255,61,110,0.025) 6px,rgba(255,61,110,0.025) 7px);"></div>
+                <div style="position:relative;z-index:1;max-width:90%;">
+                  <div style="background:white;border-radius:8px 8px 2px 8px;padding:8px 10px;">
+                    <div style="font-size:11px;color:#1a0008;font-weight:800;line-height:1.4;">"I know exactly<br>who I'm dealing with."</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 5: Revelation flash -->
+            <div class="webtoon-panel" data-delay="480" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#0a0510,#150a20);min-height:160px;overflow:hidden;border-bottom:2px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;">
+              <div style="position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,204,0,0.04) 10deg,transparent 20deg,transparent 30deg,rgba(255,204,0,0.04) 40deg,transparent 50deg,transparent 60deg,rgba(255,204,0,0.04) 70deg,transparent 80deg);transform:scale(2.5);"></div>
+              <div style="position:relative;z-index:1;text-align:center;">
+                <div style="font-size:16px;font-weight:900;color:#ffcc00;letter-spacing:.15em;text-shadow:0 0 20px rgba(255,204,0,0.8),0 0 50px rgba(255,100,0,0.5);transform:skew(-5deg);display:inline-block;">THE TRUTH IS REVEALED</div>
+                <div style="font-size:40px;margin-top:8px;filter:drop-shadow(0 0 16px rgba(255,204,0,0.7));">⚡</div>
+              </div>
+            </div>
+
+            <!-- PANEL 6: Emotional close-up -->
+            <div class="webtoon-panel" data-delay="600" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#080310,#120818);min-height:240px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:2px solid rgba(199,119,255,0.2);">
+              <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(199,119,255,0.2),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+              <div style="position:relative;z-index:1;text-align:center;padding:28px 20px;">
+                <div style="font-size:60px;margin-bottom:14px;">😰</div>
+                <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:14px 18px;max-width:260px;margin:0 auto;">
+                  <div style="font-size:15px;font-weight:800;color:white;line-height:1.4;">"This is bigger<br>than I thought."</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 7: Cliffhanger -->
+            <div class="webtoon-panel" data-delay="720" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#0d0015,#050008);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;">
+              <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,61,110,0.1),transparent 70%);"></div>
+              <div style="position:relative;z-index:1;text-align:center;padding:28px 20px;">
+                <div style="font-size:10px;letter-spacing:.3em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:14px;">— To Be Continued —</div>
+                <div style="font-size:26px;font-weight:900;color:white;text-shadow:0 0 24px rgba(199,119,255,0.5);">Episode 02 ↓</div>
+                <div style="margin-top:10px;font-size:11px;color:rgba(199,119,255,0.55);">Auto-generated by AI in 18 seconds</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: Info panel -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="background:linear-gradient(135deg,rgba(199,119,255,0.1),rgba(255,110,199,0.07));border:1px solid rgba(199,119,255,0.3);border-radius:16px;padding:20px;">
+            <div style="font-size:11px;font-weight:700;color:#c77dff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">🎭 Webtoon Mode Features</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:16px;">🖼️</span><span>Dramatik panel kompozitsiyalari</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:16px;">💬</span><span>Muloqot pufakchalari va ichki fikrlar</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:16px;">⚡</span><span>Harakat chiziqlari va SFX matnlar</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:16px;">🎭</span><span>Ko'p qahramon yuz ifodalari</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:16px;">📱</span><span>Vertikal scroll format (9:16)</span></div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:13px;"><span style="font-size:16px;">🌈</span><span>3 rang sxemasi: Dark / Crimson / Cyber</span></div>
+            </div>
+          </div>
+
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">🎨 Panel Style</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(199,119,255,0.08);border:1px solid rgba(199,119,255,0.4);border-radius:10px;cursor:pointer;">
+                <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#1a0030,#c77dff);flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;">Dark Fantasy</div><div style="font-size:10px;color:var(--muted);">Purple + noir tones</div></div>
+                <span style="margin-left:auto;font-size:10px;color:#c77dff;font-weight:700;">ACTIVE</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;">
+                <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#ff0040,#ff9f43);flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;">Crimson Drama</div><div style="font-size:10px;color:var(--muted);">Red + action energy</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;">
+                <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#001a3d,#00d2ff);flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;">Cyber Thriller</div><div style="font-size:10px;color:var(--muted);">Cyan + neon tech</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">📊 Stats</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="text-align:center;padding:10px;background:rgba(199,119,255,0.06);border-radius:10px;border:1px solid rgba(199,119,255,0.15);">
+                <div style="font-size:20px;font-weight:800;color:#c77dff;">6-12</div>
+                <div style="font-size:10px;color:var(--muted);">Panels/Episode</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:rgba(255,61,110,0.06);border-radius:10px;border:1px solid rgba(255,61,110,0.15);">
+                <div style="font-size:20px;font-weight:800;color:#ff8fab;">18s</div>
+                <div style="font-size:10px;color:var(--muted);">Gen Time</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:rgba(0,210,255,0.06);border-radius:10px;border:1px solid rgba(0,210,255,0.15);">
+                <div style="font-size:20px;font-weight:800;color:#00d2ff;">4K</div>
+                <div style="font-size:10px;color:var(--muted);">Resolution</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:rgba(10,255,178,0.06);border-radius:10px;border:1px solid rgba(10,255,178,0.15);">
+                <div style="font-size:20px;font-weight:800;color:#0affb2;">∞</div>
+                <div style="font-size:10px;color:var(--muted);">Episodes</div>
+              </div>
+            </div>
+          </div>
+
+          <a href="/register" style="display:block;background:linear-gradient(135deg,#c77dff,#ff6ec7,#ff3d6e);color:white;text-decoration:none;padding:14px;border-radius:12px;font-size:15px;font-weight:800;text-align:center;box-shadow:0 4px 24px rgba(199,119,255,0.4);transition:all .2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+            🎭 Try Webtoon Mode Free →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- HOW IT WORKS -->
   <section class="how-section" id="how">
     <div class="how-container">
@@ -1768,6 +2193,111 @@
     }
 
     buildStageList();
+
+    // ===== VIDEO PLAYER (Output Showcase) =====
+    let videoPlaying = false;
+    let videoTimer = null;
+    let videoProgress = 0;
+    const VIDEO_DURATION = 872; // 14:32 in seconds
+
+    function playVideo() {
+      if (videoPlaying) {
+        // Pause
+        videoPlaying = false;
+        clearInterval(videoTimer);
+        const btn = document.getElementById('play-control');
+        if (btn) btn.textContent = '▶';
+        const overlay = document.getElementById('play-btn-overlay');
+        if (overlay) overlay.style.display = 'flex';
+        const wf = document.getElementById('yt-waveform');
+        if (wf) wf.style.display = 'none';
+        return;
+      }
+      videoPlaying = true;
+      const btn = document.getElementById('play-control');
+      if (btn) btn.textContent = '⏸';
+      const overlay = document.getElementById('play-btn-overlay');
+      if (overlay) overlay.style.display = 'none';
+
+      // Show waveform
+      const wfEl = document.getElementById('yt-waveform');
+      if (wfEl) {
+        wfEl.style.display = 'flex';
+        wfEl.innerHTML = '';
+        for (let i = 0; i < 60; i++) {
+          const bar = document.createElement('div');
+          const h = Math.random() * 28 + 6;
+          const colors = ['#ff3d6e','#ff9f43','#0affb2','#00d2ff','#c77dff'];
+          bar.style.cssText = `width:3px; height:${h}px; border-radius:2px; background:${colors[i%colors.length]}; opacity:0.7; animation:waveBounce ${(Math.random()*0.5+0.3).toFixed(2)}s ease-in-out infinite; animation-delay:${(Math.random()*-1).toFixed(2)}s; flex-shrink:0;`;
+          wfEl.appendChild(bar);
+        }
+      }
+
+      // Animate progress
+      videoTimer = setInterval(() => {
+        videoProgress += 0.5;
+        const pct = Math.min((videoProgress / VIDEO_DURATION) * 100, 100);
+        const pb = document.getElementById('progress-bar');
+        const mp = document.getElementById('mini-progress');
+        const td = document.getElementById('time-display');
+        if (pb) pb.style.width = pct + '%';
+        if (mp) mp.style.width = pct + '%';
+        if (td) {
+          const mins = Math.floor(videoProgress / 60);
+          const secs = Math.floor(videoProgress % 60);
+          td.textContent = `${mins}:${String(secs).padStart(2,'0')} / 14:32`;
+        }
+        if (videoProgress >= VIDEO_DURATION) {
+          clearInterval(videoTimer);
+          videoPlaying = false;
+          videoProgress = 0;
+          if (btn) btn.textContent = '▶';
+          if (overlay) overlay.style.display = 'flex';
+          if (wfEl) wfEl.style.display = 'none';
+        }
+      }, 500);
+    }
+
+    // ===== ANIMATED COUNTER =====
+    function animateCounter(el, target, duration = 1800) {
+      let start = 0;
+      const step = target / (duration / 16);
+      const timer = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = Math.floor(start).toLocaleString();
+        if (start >= target) clearInterval(timer);
+      }, 16);
+    }
+
+    const counterObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const target = parseInt(e.target.dataset.target);
+          animateCounter(e.target, target);
+          counterObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+    // ===== WEBTOON PANEL SCROLL ANIMATION =====
+    function initWebtoonPanels() {
+      const panels = document.querySelectorAll('.webtoon-panel');
+      const panelObserver = new IntersectionObserver(entries => {
+        entries.forEach((e, i) => {
+          if (e.isIntersecting) {
+            setTimeout(() => {
+              e.target.style.opacity = '1';
+              e.target.style.transform = 'translateY(0)';
+            }, parseInt(e.target.dataset.delay || 0));
+            panelObserver.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.15 });
+      panels.forEach(p => panelObserver.observe(p));
+    }
+    initWebtoonPanels();
+
   </script>
 </body>
 </html>
