@@ -213,8 +213,9 @@ def video_detail(request: Request, video_id: str):
     beat_sheet = db.get_latest_agent_output(video_id, "storytelling")
     quality_verdict = db.get_latest_agent_output(video_id, "quality_review")
     compliance_verdict = db.get_latest_agent_output(video_id, "compliance")
-    short_output = db.get_latest_agent_output(video_id, "shorts_assembly")
-    short_handle = runner.SHORTS.get(video_id)
+    publishing_output = db.get_latest_agent_output(video_id, "publishing") or {}
+    thumb_paths = publishing_output.get("thumbnail_paths", [])
+    thumb_media_urls = [f"/media/{video_id}/thumbnails/thumbnail_{i + 1}.jpg" for i in range(len(thumb_paths))]
 
     context: dict[str, Any] = {
         "video": video,
@@ -225,6 +226,8 @@ def video_detail(request: Request, video_id: str):
         "compliance_verdict": compliance_verdict,
         "short_output": short_output,
         "short_handle": short_handle,
+        "publishing_output": publishing_output,
+        "thumb_media_urls": thumb_media_urls,
         "min_dimension_score": MIN_DIMENSION_SCORE,
         "assembled_media_rel": _media_rel(video.get("assembled_video_path"), video_id),
         "short_media_rel": _media_rel(
@@ -232,6 +235,52 @@ def video_detail(request: Request, video_id: str):
         ),
     }
     return templates.TemplateResponse(request, "video_detail.html", context)
+
+
+from studio.agents.seo import generate_seo_metadata
+from studio.tools.thumbnail import generate_video_thumbnails
+
+
+@app.post("/videos/{video_id}/seo")
+def generate_seo(video_id: str):
+    video = db.get_video(video_id)
+    case = db.get_case(video["case_id"]) if video.get("case_id") else {"title": video.get("title", "Video"), "jurisdiction": "General", "turning_point": ""}
+    brief = db.get_latest_agent_output(video_id, "deep_research") or {}
+    script = video.get("script") or ""
+
+    seo = generate_seo_metadata(case, brief, script)
+    main_title = seo.viral_titles[0] if seo.viral_titles else case["title"]
+
+    niche = case.get("jurisdiction", "General")
+    tp = case.get("turning_point", "")
+    thumbnail_paths = generate_video_thumbnails(
+        video_id=str(video_id),
+        title=case["title"],
+        niche=niche,
+        turning_point=tp,
+        prompts=seo.thumbnail_prompts,
+    )
+
+    checklist = {
+        "video_path": video.get("assembled_video_path"),
+        "subtitle_path": video.get("subtitle_path"),
+        "suggested_title": main_title,
+        "viral_titles": seo.viral_titles,
+        "suggested_description": seo.description,
+        "tags": seo.tags,
+        "hashtags": seo.hashtags,
+        "thumbnail_paths": thumbnail_paths,
+    }
+
+    db.update_video(video_id, title=main_title)
+    db.record_agent_run(
+        video_id,
+        "publishing",
+        "succeeded",
+        input={"video_id": video_id, "action": "regenerate_seo"},
+        output=checklist,
+    )
+    return RedirectResponse(f"/videos/{video_id}", status_code=303)
 
 
 @app.post("/videos/{video_id}/shorts")

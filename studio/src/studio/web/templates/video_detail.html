@@ -4,11 +4,30 @@
 {% if short_handle and short_handle.status == "running" %}
 <meta http-equiv="refresh" content="4">
 {% endif %}
+<style>
+  .thumb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 12px; }
+  .thumb-card { background: #07090d; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .thumb-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-bottom: 1px solid var(--border); }
+  .thumb-info { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .copy-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #07090d; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+  .copy-btn { background: var(--panel); border: 1px solid var(--border-light); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all .15s; }
+  .copy-btn:hover { background: var(--accent); color: #fff; border-color: transparent; }
+  .tag-pill { display: inline-block; background: #07090d; border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 12px; margin: 2px 4px 2px 0; color: #94a3b8; }
+</style>
 {% endblock %}
 {% block content %}
-<h1>{{ video.title or "Untitled" }}</h1>
-<span class="badge {{ video.status }}">{{ video.status }}</span>
-<span class="muted" style="margin-left:8px;">created {{ video.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 16px;">
+  <div>
+    <h1 style="margin-bottom:6px;">{{ video.title or "Untitled Video" }}</h1>
+    <span class="badge {{ video.status }}">{{ video.status }}</span>
+    <span class="muted" style="margin-left:8px; font-size:13px;">created {{ video.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <form action="/videos/{{ video_id }}/seo" method="post">
+      <button class="btn secondary" type="submit">🔄 Regenerate Thumbnails & SEO</button>
+    </form>
+  </div>
+</div>
 
 {% if video.status in ("sourced", "researched") %}
 <div class="card" style="margin-top:16px;">
@@ -20,12 +39,88 @@
 {% endif %}
 
 {% if assembled_media_rel %}
-<h2>Long-form cut</h2>
+<h2>Long-Form Video</h2>
 <div class="card">
   <video controls src="/media/{{ video_id }}/{{ assembled_media_rel }}"></video>
 </div>
 {% endif %}
 
+<!-- 🖼️ AI THUMBNAIL PACK -->
+<h2>🖼️ AI YouTube Thumbnails</h2>
+<div class="card">
+  <div class="muted" style="font-size:13px; margin-bottom:10px;">High-CTR 16:9 thumbnails generated for this video. Right-click or click download to save.</div>
+  {% if thumb_media_urls %}
+  <div class="thumb-grid">
+    {% for url in thumb_media_urls %}
+    <div class="thumb-card">
+      <img src="{{ url }}" alt="YouTube Thumbnail Variation {{ loop.index }}">
+      <div class="thumb-info">
+        <span style="font-size:13px; font-weight:600;">Variation #{{ loop.index }}</span>
+        <a class="btn secondary" style="padding:4px 10px; font-size:12px;" href="{{ url }}" download="thumbnail_{{ loop.index }}.jpg">⬇️ Download</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">No thumbnails generated yet. Click "Regenerate Thumbnails & SEO" above.</div>
+  {% endif %}
+</div>
+
+<!-- 🎯 VIRAL SEO METADATA -->
+{% if publishing_output and publishing_output.viral_titles %}
+<h2>🎯 Viral YouTube Titles & SEO Metadata</h2>
+<div class="card">
+  <div style="font-size:14px; font-weight:700; margin-bottom:8px; color:#818cf8;">🔥 Top 5 High-CTR Titles:</div>
+  {% for t in publishing_output.viral_titles %}
+  <div class="copy-row">
+    <span style="font-weight:500;">{{ t }}</span>
+    <button class="copy-btn" onclick="copyText('{{ t|escapejs }}', this)">📋 Copy</button>
+  </div>
+  {% endfor %}
+
+  {% if publishing_output.suggested_description %}
+  <div style="font-size:14px; font-weight:700; margin:18px 0 8px; color:#34d399;">📝 YouTube Description:</div>
+  <div style="position:relative;">
+    <textarea readonly style="height:120px; font-family:monospace; font-size:13px; color:#cbd5e1;" id="yt-desc">{{ publishing_output.suggested_description }}</textarea>
+    <button class="copy-btn" style="position:absolute; right:12px; top:12px;" onclick="copyText(document.getElementById('yt-desc').value, this)">📋 Copy Description</button>
+  </div>
+  {% endif %}
+
+  {% if publishing_output.tags %}
+  <div style="font-size:14px; font-weight:700; margin:18px 0 8px; color:#fbbf24;">🏷️ Search Tags & Keywords:</div>
+  <div style="margin-bottom:10px;">
+    {% for tag in publishing_output.tags %}
+    <span class="tag-pill">{{ tag }}</span>
+    {% endfor %}
+  </div>
+  <button class="copy-btn" onclick="copyText('{{ publishing_output.tags|join(', ')|escapejs }}', this)">📋 Copy All Tags (Comma Separated)</button>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- 📱 SHORTS SECTION -->
+<h2>📱 Shorts / TikTok Cut</h2>
+<div class="card">
+  {% if short_handle and short_handle.status == "running" %}
+  <div class="empty">Generating short — this page refreshes automatically.</div>
+  {% elif short_handle and short_handle.status == "failed" %}
+  <div style="color: var(--bad);">{{ short_handle.error }}</div>
+  {% elif short_media_rel %}
+  <video class="vertical" controls src="/media/{{ video_id }}/{{ short_media_rel }}"></video>
+  {% else %}
+  <div class="empty">No short generated yet.</div>
+  {% endif %}
+
+  {% if can_make_short and not (short_handle and short_handle.status == "running") %}
+  <form action="/videos/{{ video_id }}/shorts" method="post" style="margin-top:10px;">
+    <button class="btn secondary" type="submit">{{ "Regenerate Short" if short_output else "⚡ Generate 9:16 Short" }}</button>
+  </form>
+  {% elif not can_make_short %}
+  <div class="muted" style="font-size:13px;">Needs Storytelling to have run first.</div>
+  {% endif %}
+</div>
+
+<!-- 🔍 QUALITY & COMPLIANCE -->
 {% if quality_verdict %}
 <h2>Quality Review</h2>
 <div class="card">
@@ -62,41 +157,23 @@
 {% endif %}
 
 {% if video.status == "approved" and not video.youtube_video_id %}
-<h2>Publish</h2>
+<h2>Publish to YouTube</h2>
 <div class="card">
-  <div class="muted" style="margin-bottom:8px;">Upload manually via YouTube Studio, then record it here.</div>
+  <div class="muted" style="margin-bottom:8px;">Upload manually via YouTube Studio using the titles, thumbnails, and description above, then record the URL here.</div>
   <form action="/videos/{{ video_id }}/publish" method="post" style="display:flex; gap:10px;">
-    <input type="text" name="youtube_ref" placeholder="YouTube URL or video ID" required>
+    <input type="text" name="youtube_ref" placeholder="YouTube URL or Video ID" required style="max-width:320px;">
     <button class="btn" type="submit">Mark Published</button>
   </form>
 </div>
 {% endif %}
+
 {% if video.youtube_video_id %}
-<div class="empty">Published as <code>{{ video.youtube_video_id }}</code>{% if video.published_at %} on {{ video.published_at.strftime("%Y-%m-%d") }}{% endif %}.</div>
+<div class="card" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">
+  ✅ Published as <code>{{ video.youtube_video_id }}</code>{% if video.published_at %} on {{ video.published_at.strftime("%Y-%m-%d") }}{% endif %}.
+</div>
 {% endif %}
 
-<h2>Shorts</h2>
-<div class="card">
-  {% if short_handle and short_handle.status == "running" %}
-  <div class="empty">Generating short — this page refreshes automatically.</div>
-  {% elif short_handle and short_handle.status == "failed" %}
-  <div style="color: var(--bad);">{{ short_handle.error }}</div>
-  {% elif short_media_rel %}
-  <video class="vertical" controls src="/media/{{ video_id }}/{{ short_media_rel }}"></video>
-  {% else %}
-  <div class="empty">No short yet.</div>
-  {% endif %}
-
-  {% if can_make_short and not (short_handle and short_handle.status == "running") %}
-  <form action="/videos/{{ video_id }}/shorts" method="post" style="margin-top:10px;">
-    <button class="btn secondary" type="submit">{{ "Regenerate Short" if short_output else "Make Short" }}</button>
-  </form>
-  {% elif not can_make_short %}
-  <div class="muted" style="font-size:13px;">Needs Storytelling to have run first.</div>
-  {% endif %}
-</div>
-
-<h2>Agent runs</h2>
+<h2>Agent Execution Log</h2>
 <div class="card">
   <table>
     <tr><th>Agent</th><th>Status</th><th>Started</th></tr>
@@ -109,4 +186,20 @@
     {% endfor %}
   </table>
 </div>
+
+<script>
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerText;
+    btn.innerText = "✅ Copied!";
+    btn.style.background = "#10b981";
+    btn.style.color = "#fff";
+    setTimeout(() => {
+      btn.innerText = orig;
+      btn.style.background = "";
+      btn.style.color = "";
+    }, 2000);
+  });
+}
+</script>
 {% endblock %}
