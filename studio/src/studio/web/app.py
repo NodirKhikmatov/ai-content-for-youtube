@@ -169,6 +169,8 @@ def save_settings(
     quality_review_backend: str = Form("fake"),
     telegram_bot_token: str = Form(""),
     telegram_chat_id: str = Form(""),
+    bgm_enabled: str = Form("true"),
+    bgm_volume: float = Form(0.15),
 ):
     update_settings(
         anthropic_api_key=anthropic_api_key or None,
@@ -189,6 +191,8 @@ def save_settings(
         quality_review_backend=quality_review_backend,
         telegram_bot_token=telegram_bot_token or None,
         telegram_chat_id=telegram_chat_id or None,
+        bgm_enabled=bgm_enabled.lower() == "true",
+        bgm_volume=bgm_volume,
     )
     return RedirectResponse("/settings?saved=true", status_code=303)
 

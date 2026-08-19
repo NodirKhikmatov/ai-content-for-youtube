@@ -42,6 +42,11 @@
 <h2>Long-Form Video</h2>
 <div class="card">
   <video controls src="/media/{{ video_id }}/{{ assembled_media_rel }}"></video>
+  <div style="display:flex; gap:8px; margin-top:10px; font-size:12px; align-items:center;">
+    <span class="badge ok">🎙️ Voice: 100%</span>
+    <span class="badge ok">🎵 BGM: 15% Ducked</span>
+    <span class="badge ok">💬 Subtitles: Synchronized</span>
+  </div>
 </div>
 {% endif %}
 

@@ -35,6 +35,10 @@ log = logging.getLogger(__name__)
 MEDIA_DIR = Path("media")
 
 
+from studio.config import settings
+from studio.tools.audio_fx import mix_master_soundtrack
+
+
 def run(state: PipelineState) -> PipelineState:
     video_id = state["video_id"]
     voice_audio_path = state.get("voice_audio_path")
@@ -53,6 +57,7 @@ def run(state: PipelineState) -> PipelineState:
     work_dir.mkdir(parents=True, exist_ok=True)
     concatenated_path = work_dir / "concatenated.mp4"
     matched_path = work_dir / "matched.mp4"
+    master_audio_path = work_dir / "master_audio.aac"
     assembled_path = work_dir / "assembled.mp4"
 
     try:
@@ -61,11 +66,25 @@ def run(state: PipelineState) -> PipelineState:
         narration_seconds = probe_duration_seconds(Path(voice_audio_path))
         match_video_to_audio_duration(concatenated_path, narration_seconds, matched_path)
 
-        mux_audio_over_video(matched_path, Path(voice_audio_path), assembled_path)
+        case = db.get_case(state["case_id"]) if state.get("case_id") else None
+        jurisdiction = (case.get("jurisdiction") or "").lower() if case else ""
+        is_webtoon = any(k in jurisdiction for k in ("webtoon", "manhwa", "manga", "anime"))
+
+        # Mix voice narration with ducked cinematic BGM
+        mix_master_soundtrack(
+            voice_path=Path(voice_audio_path),
+            out_path=master_audio_path,
+            is_webtoon=is_webtoon,
+            bgm_volume=settings.bgm_volume,
+            enable_bgm=settings.bgm_enabled,
+        )
+
+        mux_audio_over_video(matched_path, master_audio_path, assembled_path)
     except Exception as exc:
         db.record_agent_run(video_id, "video_assembly", "failed", error=str(exc))
         raise
     finally:
+        master_audio_path.unlink(missing_ok=True)
         concatenated_path.unlink(missing_ok=True)
         matched_path.unlink(missing_ok=True)
 

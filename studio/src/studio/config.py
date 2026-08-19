@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     telegram_bot_token: str | None = None
     telegram_chat_id: str | None = None
 
+    # Audio & Soundtrack
+    bgm_enabled: bool = True
+    bgm_volume: float = 0.15
+    sfx_enabled: bool = True
+
     database_url: str = "postgresql://studio:studio@localhost:5434/studio"
 
     r2_account_id: str | None = None

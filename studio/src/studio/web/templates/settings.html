@@ -130,6 +130,30 @@
   </div>
 
   <div class="card">
+    <h2 style="margin-top:0; color:#ec4899;">🎵 Soundtrack & Audio Mixing (BGM & SFX)</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="bgm_enabled">Background Music (BGM)</label>
+        <select id="bgm_enabled" name="bgm_enabled">
+          <option value="true" {% if settings.bgm_enabled %}selected{% endif %}>Enabled (Cinematic Genre Soundtrack)</option>
+          <option value="false" {% if not settings.bgm_enabled %}selected{% endif %}>Disabled (Voice Only)</option>
+        </select>
+        <div class="form-hint">Automatically ducked under voice narration so speech is 100% clear.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="bgm_volume">Music Volume</label>
+        <select id="bgm_volume" name="bgm_volume">
+          <option value="0.10" {% if settings.bgm_volume == 0.10 %}selected{% endif %}>10% (Subtle Background)</option>
+          <option value="0.15" {% if settings.bgm_volume == 0.15 %}selected{% endif %}>15% (Balanced - Recommended)</option>
+          <option value="0.25" {% if settings.bgm_volume == 0.25 %}selected{% endif %}>25% (Dramatic & Prominent)</option>
+          <option value="0.35" {% if settings.bgm_volume == 0.35 %}selected{% endif %}>35% (High Energy)</option>
+        </select>
+        <div class="form-hint">Volume ratio relative to narration voice.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <h2 style="margin-top:0; color:#38bdf8;">📱 Human-in-the-Loop & Telegram Alerts</h2>
     <div class="grid-2">
       <div class="form-group">
