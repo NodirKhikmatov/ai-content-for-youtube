@@ -60,6 +60,7 @@ def _prompt(case: dict, beat_sheet: dict, retry_note: str = "") -> str:
             f'video about "{case["title"]}" ({case.get("jurisdiction", "Webtoon")}) from this beat sheet.\n\n'
             f'Tone & Style: Energetic, immersive, cinematic, suspenseful Manhwa Recap YouTuber style. '
             f'Engage the viewer directly, build high tension before battles, deliver triumphant payoffs when the protagonist powers up, and end on a gripping cliffhanger.\n'
+            f'Multi-Character Acting: You may use speaker tags [HERO], [VILLAIN], [SYSTEM_AI], and [NARRATOR] for dramatic dialogue lines so our voice synthesizer voices each character separately!\n'
             f'Length: One continuous narration, in beat order, {low}-{high} words total '
             f'(roughly {TARGET_RUNTIME_SECONDS[0] // 60}-{TARGET_RUNTIME_SECONDS[1] // 60} minutes spoken).\n\n'
             f'{beats_block}{retry_note}'

@@ -33,6 +33,22 @@ VOICE_POOL = [
     "2EiwWnXFnvU5JabPnv8n",  # Clyde
 ]
 
+# Character role mapping for multi-character voice acting
+CHARACTER_VOICES = {
+    "narrator": "21m00Tcm4TlvDq8ikWAM",   # Rachel / Grounded Storyteller
+    "hero": "ErXwobaYiN019PkySvjV",       # Antoni / High Energy Protagonist
+    "villain": "VR6AewLTigWG4xSOukaG",    # Arnold / Deep Menacing Antagonist
+    "system_ai": "EXAVITQu4vr4xnSDxMaL",  # Bella / Status Notification
+}
+
+# macOS system voices for offline zero-cost multi-character testing
+FAKE_ROLE_VOICES = {
+    "narrator": "Daniel",
+    "hero": "Samantha",
+    "villain": "Fred",
+    "system_ai": "Victoria",
+}
+
 MODEL_ID = "eleven_multilingual_v2"
 
 
@@ -60,23 +76,33 @@ class FakeTTSBackend:
     """Local, zero-cost stand-in for ElevenLabsBackend: same TTSBackend
     interface, but synthesizes narration with macOS's built-in `say`
     command instead of calling ElevenLabs — no API key, no network call,
-    no bill, no per-voice API permissions to hit. voice_id is accepted but
-    unused (say's voice selection is a system voice name, not an
-    ElevenLabs voice ID, so there's nothing meaningful to rotate through
-    here). Not a substitute for ElevenLabs' voice quality — see
-    VOICE_BACKEND in .env.example.
+    no bill, no per-voice API permissions to hit.
     """
 
-    def synthesize(self, text: str, voice_id: str) -> bytes:
+    def synthesize(self, text: str, voice_id: str = "narrator") -> bytes:
         with tempfile.TemporaryDirectory() as tmp_dir:
             aiff_path = Path(tmp_dir) / "voice.aiff"
             mp3_path = Path(tmp_dir) / "voice.mp3"
 
+            sys_voice = FAKE_ROLE_VOICES.get(voice_id, "Daniel")
+            say_args = ["say"]
+            # Check if voice is specified
+            if sys_voice:
+                say_args.extend(["-v", sys_voice])
+            say_args.extend(["-o", str(aiff_path), text])
+
             say_result = subprocess.run(
-                ["say", "-o", str(aiff_path), text],
+                say_args,
                 capture_output=True,
                 text=True,
             )
+            # If named voice isn't installed on system, fallback to default say
+            if say_result.returncode != 0:
+                say_result = subprocess.run(
+                    ["say", "-o", str(aiff_path), text],
+                    capture_output=True,
+                    text=True,
+                )
             if say_result.returncode != 0:
                 raise RuntimeError(f"macOS 'say' failed: {say_result.stderr[-2000:]}")
 
@@ -97,3 +123,8 @@ def voice_for_video(video_id: str) -> str:
     voice across a retry, but different videos spread across the pool."""
     index = int(str(video_id).replace("-", ""), 16) % len(VOICE_POOL)
     return VOICE_POOL[index]
+
+
+def voice_for_role(role: str, fallback_voice: str) -> str:
+    """Returns the matching voice ID for a specific dialogue role."""
+    return CHARACTER_VOICES.get(role, fallback_voice)
