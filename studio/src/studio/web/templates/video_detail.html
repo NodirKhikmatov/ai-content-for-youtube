@@ -213,19 +213,67 @@
 {% endif %}
 
 {% if video.status == "approved" and not video.youtube_video_id %}
-<h2>Publish to YouTube</h2>
+<h2>🚀 Publish to YouTube</h2>
 <div class="card">
-  <div class="muted" style="margin-bottom:8px;">Upload manually via YouTube Studio using the titles, thumbnails, and description above, then record the URL here.</div>
+  <div style="font-size:14px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Option 1: 1-Click Direct YouTube Upload (API)</div>
+  <div class="muted" style="font-size:13px; margin-bottom:12px;">Automatically uploads video, attaches your selected AI thumbnail, sets tags, and applies SEO description.</div>
+  
+  <form action="/videos/{{ video_id }}/publish_api" method="post" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; background:#07090d; padding:14px; border-radius:8px; border:1px solid var(--border);">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
+      <div>
+        <label class="form-label" style="font-size:12px; font-weight:600; color:#94a3b8;">Choose Video Title</label>
+        <select name="selected_title" style="width:100%;">
+          <option value="{{ video.title }}">{{ video.title }} (Default)</option>
+          {% if publishing_output and publishing_output.viral_titles %}
+            {% for t in publishing_output.viral_titles %}
+            <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          {% endif %}
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" style="font-size:12px; font-weight:600; color:#94a3b8;">Select Thumbnail Variation</label>
+        <select name="thumbnail_idx" style="width:100%;">
+          <option value="1">Thumbnail #1 (Primary)</option>
+          <option value="2">Thumbnail #2 (Alternative)</option>
+          <option value="3">Thumbnail #3 (High-Contrast)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="form-label" style="font-size:12px; font-weight:600; color:#94a3b8;">Privacy Status</label>
+        <select name="privacy_status" style="width:100%;">
+          <option value="unlisted">Unlisted (Recommended for Review)</option>
+          <option value="public">Public (Instant Live)</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" type="submit" style="align-self:flex-start; margin-top:6px;">🚀 1-Click Publish to YouTube</button>
+  </form>
+
+  <div style="font-size:14px; font-weight:700; color:#94a3b8; margin:14px 0 6px;">Option 2: Manual Upload Confirmation</div>
+  <div class="muted" style="margin-bottom:8px; font-size:13px;">If you uploaded manually via YouTube Studio, paste the URL or Video ID below:</div>
   <form action="/videos/{{ video_id }}/publish" method="post" style="display:flex; gap:10px;">
-    <input type="text" name="youtube_ref" placeholder="YouTube URL or Video ID" required style="max-width:320px;">
-    <button class="btn" type="submit">Mark Published</button>
+    <input type="text" name="youtube_ref" placeholder="YouTube URL (e.g. https://youtu.be/abc123) or Video ID" required style="max-width:360px;">
+    <button class="btn secondary" type="submit">Mark Published</button>
   </form>
 </div>
 {% endif %}
 
 {% if video.youtube_video_id %}
-<div class="card" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">
-  ✅ Published as <code>{{ video.youtube_video_id }}</code>{% if video.published_at %} on {{ video.published_at.strftime("%Y-%m-%d") }}{% endif %}.
+<div class="card" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+  <div>
+    <div style="font-weight:700; color:#34d399; font-size:15px; margin-bottom:4px;">🎉 Published on YouTube!</div>
+    <span class="muted" style="font-size:13px;">Video ID: <code>{{ video.youtube_video_id }}</code></span>
+  </div>
+  {% if not video.youtube_video_id.startswith('sim_') %}
+  <a class="btn" href="https://youtu.be/{{ video.youtube_video_id }}" target="_blank" rel="noreferrer">📺 Open on YouTube</a>
+  {% else %}
+  <span class="badge ok">Simulated Upload</span>
+  {% endif %}
 </div>
 {% endif %}
 

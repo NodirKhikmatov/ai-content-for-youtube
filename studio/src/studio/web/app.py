@@ -318,6 +318,48 @@ def make_short(video_id: str):
     return RedirectResponse(f"/videos/{video_id}", status_code=303)
 
 
+from studio.tools.youtube_upload import upload_video_to_youtube
+
+
+@app.post("/videos/{video_id}/publish_api")
+def publish_api(
+    video_id: str,
+    selected_title: str = Form(""),
+    privacy_status: str = Form("unlisted"),
+    thumbnail_idx: int = Form(1),
+):
+    video = db.get_video(video_id)
+    publishing_output = db.get_latest_agent_output(video_id, "publishing") or {}
+
+    title = selected_title.strip() or video.get("title") or "YouTube Video"
+    description = publishing_output.get("suggested_description") or ""
+    tags = publishing_output.get("tags") or []
+
+    thumb_paths = publishing_output.get("thumbnail_paths") or []
+    thumb_path = (
+        Path(thumb_paths[thumbnail_idx - 1])
+        if 0 < thumbnail_idx <= len(thumb_paths)
+        else None
+    )
+
+    assembled_path = Path(
+        video.get("assembled_video_path") or (MEDIA_DIR / video_id / "assembled.mp4")
+    )
+
+    res = upload_video_to_youtube(
+        video_path=assembled_path,
+        title=title,
+        description=description,
+        tags=tags,
+        privacy_status=privacy_status,
+        thumbnail_path=thumb_path,
+    )
+
+    yt_id = res.get("youtube_video_id", "sim_yt_live")
+    mark_published(video_id, yt_id)
+    return RedirectResponse(f"/videos/{video_id}", status_code=303)
+
+
 @app.post("/videos/{video_id}/publish")
 def publish(video_id: str, youtube_ref: str = Form(...)):
     mark_published(video_id, youtube_ref)
