@@ -12,16 +12,20 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #07090f;
-      --panel: #0e1220;
-      --border: #1e2537;
-      --text: #f0f4ff;
-      --muted: #6b7fa3;
-      --accent: #6366f1;
-      --accent2: #a855f7;
-      --cyan: #22d3ee;
-      --pink: #ec4899;
-      --green: #10b981;
+      --bg: #060608;
+      --panel: #0d0d12;
+      --border: #1c1c28;
+      --text: #f8f8ff;
+      --muted: #7a7a9a;
+      --accent: #ff3d6e;
+      --accent2: #ff9f43;
+      --cyan: #00d2ff;
+      --pink: #ff6ec7;
+      --green: #0affb2;
+      --purple: #a855f7;
+      --blue: #3b82f6;
+      --rainbow: linear-gradient(135deg, #ff3d6e 0%, #ff9f43 25%, #f9f871 42%, #0affb2 58%, #00d2ff 75%, #a855f7 100%);
+      --rainbow-text: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #c77dff);
       --font: 'Outfit', sans-serif;
     }
 
@@ -57,8 +61,8 @@
       padding: 16px 48px;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      background: rgba(7, 9, 15, 0.7);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(6, 6, 8, 0.85);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       transition: background .3s ease;
     }
 
@@ -72,7 +76,7 @@
     .logo-icon {
       width: 36px;
       height: 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: var(--rainbow);
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -135,7 +139,7 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, #ff3d6e, #ff9f43);
       color: white;
       padding: 9px 22px;
       border-radius: 10px;
@@ -146,12 +150,12 @@
       cursor: pointer;
       text-decoration: none;
       transition: all .2s ease;
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+      box-shadow: 0 0 24px rgba(255, 61, 110, 0.4);
     }
 
     .btn-primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 36px rgba(255, 61, 110, 0.6);
     }
 
     /* ===================== HERO ===================== */
@@ -178,7 +182,7 @@
     .orb-1 {
       width: 500px;
       height: 500px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.25), transparent 70%);
+      background: radial-gradient(circle, rgba(255, 61, 110, 0.2), transparent 70%);
       top: -100px;
       left: -100px;
     }
@@ -186,7 +190,7 @@
     .orb-2 {
       width: 400px;
       height: 400px;
-      background: radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 70%);
+      background: radial-gradient(circle, rgba(0, 210, 255, 0.18), transparent 70%);
       top: 50px;
       right: -80px;
       animation-delay: -3s;
@@ -195,7 +199,7 @@
     .orb-3 {
       width: 350px;
       height: 350px;
-      background: radial-gradient(circle, rgba(34, 211, 238, 0.12), transparent 70%);
+      background: radial-gradient(circle, rgba(10, 255, 178, 0.12), transparent 70%);
       bottom: 0;
       left: 40%;
       animation-delay: -6s;
@@ -239,13 +243,13 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid rgba(99, 102, 241, 0.35);
+      background: rgba(255, 61, 110, 0.1);
+      border: 1px solid rgba(255, 61, 110, 0.4);
       padding: 7px 16px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 600;
-      color: #818cf8;
+      color: #ff8fab;
       margin-bottom: 28px;
       animation: fadeInUp .6s ease both;
     }
@@ -253,7 +257,7 @@
     .hero-badge .dot {
       width: 6px;
       height: 6px;
-      background: #818cf8;
+      background: #ff3d6e;
       border-radius: 50%;
       animation: pulse 2s ease infinite;
     }
@@ -273,7 +277,7 @@
     }
 
     .hero-title .gradient-word {
-      background: linear-gradient(135deg, #818cf8, #c084fc, #38bdf8);
+      background: linear-gradient(90deg, #ff3d6e, #ff9f43, #f9f871, #0affb2, #00d2ff, #c77dff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -308,7 +312,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, #ff3d6e, #ff9f43);
       color: white;
       padding: 14px 30px;
       border-radius: 12px;
@@ -319,12 +323,12 @@
       border: none;
       cursor: pointer;
       transition: all .25s ease;
-      box-shadow: 0 4px 30px rgba(99, 102, 241, 0.45);
+      box-shadow: 0 4px 30px rgba(255, 61, 110, 0.5);
     }
 
     .hero-cta:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(99, 102, 241, 0.6);
+      box-shadow: 0 8px 44px rgba(255, 61, 110, 0.7);
     }
 
     .hero-cta .arrow {
@@ -363,15 +367,16 @@
     }
 
     .preview-frame {
-      background: linear-gradient(135deg, rgba(14, 18, 32, 0.9), rgba(20, 25, 45, 0.9));
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(135deg, rgba(13, 13, 18, 0.95), rgba(18, 12, 20, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.07);
       border-radius: 20px;
       padding: 20px;
       backdrop-filter: blur(20px);
       box-shadow:
         0 0 0 1px rgba(255,255,255,0.04),
-        0 40px 80px rgba(0, 0, 0, 0.5),
-        0 0 100px rgba(99, 102, 241, 0.1);
+        0 40px 80px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(255, 61, 110, 0.08),
+        0 0 140px rgba(0, 210, 255, 0.06);
       position: relative;
       overflow: hidden;
     }
@@ -514,7 +519,7 @@
     .stat-number {
       font-size: 28px;
       font-weight: 800;
-      background: linear-gradient(135deg, #fff, #818cf8);
+      background: var(--rainbow);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -540,7 +545,10 @@
 
     .section-label {
       font-size: 12px;
-      color: var(--accent);
+      background: var(--rainbow);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       text-transform: uppercase;
       letter-spacing: .12em;
       font-weight: 700;
@@ -602,9 +610,9 @@
     }
 
     .feature-card:hover {
-      border-color: var(--card-border, rgba(99,102,241,0.4));
+      border-color: var(--card-border, rgba(255,61,110,0.4));
       transform: translateY(-4px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px var(--card-glow, rgba(255,61,110,0.12));
     }
 
     .feature-card:hover::before { opacity: 1; }
@@ -695,9 +703,9 @@
     }
 
     .step-card:hover .step-num {
-      border-color: var(--accent);
-      background: rgba(99,102,241,0.1);
-      box-shadow: 0 0 24px rgba(99,102,241,0.3);
+      border-color: transparent;
+      background: linear-gradient(135deg, rgba(255,61,110,0.15), rgba(0,210,255,0.15));
+      box-shadow: 0 0 28px rgba(255, 61, 110, 0.35);
     }
 
     .step-title {
@@ -747,9 +755,11 @@
     }
 
     .lang-pill:hover {
-      border-color: var(--accent);
-      background: rgba(99,102,241,0.1);
-      transform: scale(1.04);
+      border-image: var(--rainbow) 1;
+      border-color: #ff3d6e;
+      background: rgba(255, 61, 110, 0.1);
+      transform: scale(1.06);
+      box-shadow: 0 0 16px rgba(255, 61, 110, 0.25);
     }
 
     /* ===================== CALENDAR PROMO ===================== */
@@ -813,7 +823,8 @@
       transform: translate(-50%, -50%);
       width: 700px;
       height: 400px;
-      background: radial-gradient(ellipse, rgba(99,102,241,0.15), transparent 70%);
+      background: radial-gradient(ellipse at 30% 50%, rgba(255,61,110,0.15), transparent 55%),
+                  radial-gradient(ellipse at 70% 50%, rgba(0,210,255,0.12), transparent 55%);
       pointer-events: none;
     }
 
@@ -825,14 +836,24 @@
     }
 
     .cta-card {
-      background: linear-gradient(135deg, rgba(14,18,32,0.95), rgba(20,25,50,0.95));
-      border: 1px solid rgba(99,102,241,0.3);
+      background: linear-gradient(135deg, rgba(13,10,14,0.97), rgba(10,14,20,0.97));
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 24px;
       padding: 56px 48px;
+      position: relative;
+      overflow: hidden;
       box-shadow:
-        0 0 0 1px rgba(255,255,255,0.03),
-        0 40px 80px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 40px 80px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .cta-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--rainbow);
+      border-radius: 24px 24px 0 0;
     }
 
     .cta-title {
@@ -841,6 +862,8 @@
       letter-spacing: -0.02em;
       line-height: 1.1;
       margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
     }
 
     .cta-subtitle {
@@ -874,14 +897,14 @@
     }
 
     .cta-btn.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, #ff3d6e, #ff9f43);
       color: white;
-      box-shadow: 0 4px 30px rgba(99,102,241,0.45);
+      box-shadow: 0 4px 30px rgba(255,61,110,0.45);
     }
 
     .cta-btn.primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(99,102,241,0.6);
+      box-shadow: 0 8px 44px rgba(255,61,110,0.65);
     }
 
     .cta-btn.secondary {
@@ -913,8 +936,11 @@
 
     .feature-check::before {
       content: '✓';
-      color: var(--green);
-      font-weight: 700;
+      background: var(--rainbow);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 800;
     }
 
     /* ===================== FOOTER ===================== */
@@ -936,7 +962,9 @@
       color: var(--muted);
       font-size: 14px;
       font-weight: 600;
+      transition: color .2s ease;
     }
+    .footer-logo:hover { color: var(--text); }
 
     .footer-links {
       display: flex;
@@ -1307,7 +1335,7 @@
       <div class="cta-card fade-in">
         <div class="cta-title">
           Ready to build your<br>
-          <span style="background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">YouTube empire?</span>
+          <span style="background: linear-gradient(90deg, #ff3d6e, #ff9f43, #f9f871, #0affb2, #00d2ff, #c77dff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">YouTube empire?</span>
         </div>
         <p class="cta-subtitle">Join creators who are already automating their YouTube channels with AI. Start free — no credit card required.</p>
         <div class="cta-actions">
