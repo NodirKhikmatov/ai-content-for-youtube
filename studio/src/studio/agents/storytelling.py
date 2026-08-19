@@ -61,8 +61,30 @@ class BeatSheet(BaseModel):
     beats: list[Beat]
 
 
+def _is_webtoon(case: dict) -> bool:
+    jurisdiction = (case.get("jurisdiction") or "").lower()
+    return any(k in jurisdiction for k in ("webtoon", "manhwa", "manga", "anime", "recap", "comic"))
+
+
 def _prompt(case: dict, brief: dict, retry_note: str = "") -> str:
     claims_block = "\n".join(f"- {c['claim']}" for c in brief.get("claims", []))
+    if _is_webtoon(case):
+        return (
+            f'Design the 6-beat sheet for a viral YouTube Webtoon / Manhwa Recap episode '
+            f'about "{case["title"]}" ({case["jurisdiction"]}, {case["era"]}).\n\n'
+            f"Manhwa 6-Beat Format:\n"
+            f"1. hook: High-octane opening teasing the protagonist's impossible dilemma or ultimate hidden power (Must speak in under {HOOK_MAX_SECONDS} seconds / roughly {words_for_seconds(HOOK_MAX_SECONDS)} words).\n"
+            f"2. stakes: The protagonist's desperate reality (lowest rank, bullied, impoverished, or fatal betrayal) and the ruthless world order.\n"
+            f"3. escalation: The awakening incident — receiving the mysterious system, regression, or unlocking forbidden magic/arts.\n"
+            f"4. turning_point: The decisive, high-stakes battle or test where the protagonist turns the tables on their arrogant oppressors.\n"
+            f"5. verdict: The shocking, overwhelming victory that stuns the crowd and cements their new legendary status.\n"
+            f"6. aftermath: The cliffhanger setting up the next dungeon, higher-tier monster, or rival clan.\n\n"
+            f"Premise / Thesis: {brief.get('thesis', '')}\n"
+            f"Turning point / Awakening: {brief.get('turning_point') or case.get('turning_point', '')}\n"
+            f"Plot points:\n{claims_block}\n\n"
+            f"Return exactly one beat per stage: {', '.join(BEAT_NAMES)}. Each beat provides guidance for the scriptwriter and visual prompt generator.{retry_note}"
+        )
+
     return (
         f'Design the beat sheet for a "Turning Point" documentary episode about '
         f"the closed case \"{case['title']}\" ({case['jurisdiction']}, {case['era']}).\n\n"

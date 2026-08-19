@@ -42,12 +42,29 @@ class Script(BaseModel):
     narration: str
 
 
+def _is_webtoon(case: dict) -> bool:
+    jurisdiction = (case.get("jurisdiction") or "").lower()
+    return any(k in jurisdiction for k in ("webtoon", "manhwa", "manga", "anime", "recap", "comic"))
+
+
 def _prompt(case: dict, beat_sheet: dict, retry_note: str = "") -> str:
     beats_block = "\n\n".join(
         f"[{b['name'].upper()}]\n{b['content']}" for b in beat_sheet["beats"]
     )
     low = words_for_seconds(TARGET_RUNTIME_SECONDS[0])
     high = words_for_seconds(TARGET_RUNTIME_SECONDS[1])
+
+    if _is_webtoon(case):
+        return (
+            f'Write the full, exciting narration script for a YouTube Webtoon / Manhwa Recap '
+            f'video about "{case["title"]}" ({case.get("jurisdiction", "Webtoon")}) from this beat sheet.\n\n'
+            f'Tone & Style: Energetic, immersive, cinematic, suspenseful Manhwa Recap YouTuber style. '
+            f'Engage the viewer directly, build high tension before battles, deliver triumphant payoffs when the protagonist powers up, and end on a gripping cliffhanger.\n'
+            f'Length: One continuous narration, in beat order, {low}-{high} words total '
+            f'(roughly {TARGET_RUNTIME_SECONDS[0] // 60}-{TARGET_RUNTIME_SECONDS[1] // 60} minutes spoken).\n\n'
+            f'{beats_block}{retry_note}'
+        )
+
     return (
         f'Write the full narration script for a "Turning Point" documentary '
         f"episode about \"{case['title']}\" from this beat sheet. One "

@@ -116,12 +116,19 @@ def start_custom_run(
     turning_point: str = Form(""),
     niche: str = Form("General Documentary"),
     era: str = Form("Modern"),
+    protagonist: str = Form(""),
+    format_type: str = Form("documentary"),
 ):
+    if format_type == "webtoon" and protagonist.strip():
+        era = f"{era} (Protagonist: {protagonist.strip()})"
+
     custom_topic = {
         "title": title.strip(),
         "turning_point": turning_point.strip(),
         "niche": niche.strip(),
         "era": era.strip(),
+        "protagonist": protagonist.strip(),
+        "format_type": format_type.strip(),
     }
     handle = runner.start_run(custom_topic=custom_topic)
     return RedirectResponse(f"/runs/{handle.thread_id}", status_code=303)

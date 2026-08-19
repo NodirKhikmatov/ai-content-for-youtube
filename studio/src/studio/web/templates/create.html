@@ -1,71 +1,181 @@
 {% extends "base.html" %}
-{% block title %}Create Custom Video — The Turning Point{% endblock %}
+{% block title %}Create Video — The Turning Point{% endblock %}
+{% block head %}
+<style>
+  .tab-container { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+  .tab-btn { background: transparent; border: 1px solid var(--border-light); color: var(--muted); padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .15s ease; display: flex; align-items: center; gap: 8px; }
+  .tab-btn:hover { color: var(--text); background: var(--panel-hover); }
+  .tab-btn.active { background: var(--accent-gradient); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(99,102,241,0.3); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .preset-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: border-color .15s, transform .1s; }
+  .preset-card:hover { border-color: #6366f1; transform: translateY(-2px); }
+</style>
+{% endblock %}
 {% block content %}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
   <div>
-    <h1>Create Custom Video</h1>
-    <div class="muted">Generate an AI documentary on any topic, case, or event.</div>
+    <h1>Create Video</h1>
+    <div class="muted">Generate high-retention AI documentaries or viral Webtoon & Manhwa recap videos.</div>
   </div>
   <a class="btn secondary" href="/settings">⚙️ Configure API Keys</a>
 </div>
 
-<div class="card">
-  <form action="/runs/custom" method="post">
-    <div class="form-group">
-      <label class="form-label" for="title">Video Title / Main Topic *</label>
-      <input type="text" id="title" name="title" required placeholder="e.g. The Untold Story of Steve Jobs and NeXT Computer, or The Dreyfus Affair" style="width:100%;">
-      <div class="form-hint">The core subject of the documentary. The research agent will deeply investigate this topic.</div>
-    </div>
-
-    <div class="grid-2">
-      <div class="form-group">
-        <label class="form-label" for="niche">Niche / Genre</label>
-        <input type="text" id="niche" name="niche" value="Tech & History" placeholder="e.g. True Crime, Tech History, Science, Business Scandals">
-        <div class="form-hint">Channel topic niche or jurisdiction.</div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="era">Era / Timeframe</label>
-        <input type="text" id="era" name="era" value="Modern" placeholder="e.g. 1985-1997, 19th Century, 2008 Financial Crisis">
-        <div class="form-hint">Helps research and visual generation match chronological context.</div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="turning_point">Key Turning Point / Climax (Optional)</label>
-      <textarea id="turning_point" name="turning_point" placeholder="e.g. The secret demo of the NeXTSTEP OS that persuaded Apple to acquire NeXT in 1996 and bring Steve Jobs back."></textarea>
-      <div class="form-hint">The pivotal evidence, decision, or moment that changed everything. If left blank, AI research will identify it automatically.</div>
-    </div>
-
-    <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
-      <a class="btn secondary" href="/">Cancel</a>
-      <button class="btn" type="submit">🚀 Start Video Generation</button>
-    </div>
-  </form>
+<!-- Mode Switcher Tabs -->
+<div class="tab-container">
+  <button class="tab-btn active" id="tab-webtoon-btn" onclick="switchTab('webtoon')">🎨 Webtoon & Manhwa Mode</button>
+  <button class="tab-btn" id="tab-doc-btn" onclick="switchTab('doc')">🎬 Documentary & History Mode</button>
 </div>
 
-<h2>💡 Popular Examples & Ideas</h2>
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
-  <div class="card" style="cursor:pointer;" onclick="fillExample('The Rise and Fall of Enron', 'Business & Fraud', '2001', 'Sherron Watkins writes the internal whistleblower memo exposing mark-to-market accounting fraud.')">
-    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">📉 The Rise and Fall of Enron</div>
-    <div class="muted" style="font-size:13px;">Business & Fraud • 2001</div>
+<!-- 1. Webtoon & Manhwa Form -->
+<div id="tab-webtoon" class="tab-content active">
+  <div class="card">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+      <span style="font-size:24px;">🔥</span>
+      <div>
+        <h2 style="margin:0; text-transform:none; font-size:16px; color:var(--text);">Webtoon / Manhwa Anime Recap Generator</h2>
+        <div class="muted" style="font-size:12px;">Fast-paced, character-driven storytelling with dynamic manhwa art, awakening arcs, and cliffhangers.</div>
+      </div>
+    </div>
+
+    <form action="/runs/custom" method="post">
+      <input type="hidden" name="format_type" value="webtoon">
+      
+      <div class="form-group">
+        <label class="form-label" for="webtoon_title">Webtoon Title / Story Arc *</label>
+        <input type="text" id="webtoon_title" name="title" required placeholder="e.g. The Weakest Hunter Who Reached Level 999, or Solo Leveling: Double Dungeon Arc">
+        <div class="form-hint">The title of the Webtoon, Manhwa, or original comic story.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="protagonist">Main Protagonist Name</label>
+          <input type="text" id="protagonist" name="protagonist" placeholder="e.g. Sung Jin-Woo, Arthur, Lucas Trauman" value="Jin-Woo">
+          <div class="form-hint">The central character who experiences the awakening/level up.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="webtoon_genre">Manhwa Sub-Genre</label>
+          <select id="webtoon_genre" name="niche">
+            <option value="Webtoon / Manhwa - System & Leveling Up" selected>⚡ System & Leveling Up</option>
+            <option value="Webtoon / Manhwa - Reincarnation & Regression">⏳ Reincarnation & Regression</option>
+            <option value="Webtoon / Manhwa - Murim & Martial Arts">🗡️ Murim & Martial Arts</option>
+            <option value="Webtoon / Manhwa - Dungeon Hunter & S-Rank">🐉 Dungeon Hunter & S-Rank</option>
+            <option value="Webtoon / Manhwa - Dark Fantasy & Revenge">💀 Dark Fantasy & Revenge</option>
+            <option value="Webtoon / Manhwa - Villainess & Romance">👑 Villainess / Royalty Romance</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="art_style">Visual Art Style</label>
+          <select id="art_style" name="era">
+            <option value="Korean Modern Manhwa (Solo Leveling Aesthetic)" selected>✨ Korean Modern Manhwa (Solo Leveling Aesthetic)</option>
+            <option value="Dark Anime Fantasy (Ufotable Style)">🌌 Dark Anime Fantasy (Ufotable Style)</option>
+            <option value="Cyberpunk Neon Webtoon">🌆 Cyberpunk Neon Webtoon</option>
+            <option value="Classic Shonen Action Anime">🔥 Classic Shonen Action Anime</option>
+            <option value="Studio Ghibli Cinematic">🍃 Studio Ghibli Cinematic</option>
+          </select>
+          <div class="form-hint">Guides image & video generation prompts.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="webtoon_turning_point">Awakening / Turning Point Climax</label>
+          <input type="text" id="webtoon_turning_point" name="turning_point" placeholder="e.g. He unlocks the hidden Shadow Monarch system after being sacrificed in the double dungeon." value="He unlocks the hidden necromancer system after surviving betrayal in the rank-S gate.">
+          <div class="form-hint">The moment the protagonist unlocks extraordinary power and turns the tables.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+        <a class="btn secondary" href="/">Cancel</a>
+        <button class="btn" type="submit">🚀 Generate Webtoon Video</button>
+      </div>
+    </form>
   </div>
-  <div class="card" style="cursor:pointer;" onclick="fillExample('Apollo 11: 1202 Program Alarm', 'Space & Science', '1969', 'Margaret Hamilton software and Jack Garman radar check prevents fatal landing abort.')">
-    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">🚀 Apollo 11: 1202 Alarm</div>
-    <div class="muted" style="font-size:13px;">Space & Science • 1969</div>
+
+  <h2>💡 Popular Manhwa Presets (1-Click Fill)</h2>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+    <div class="preset-card" onclick="fillWebtoon('The Weakest Hunter Leveling to God Rank', 'Kang Jin-Woo', 'Webtoon / Manhwa - System & Leveling Up', 'Korean Modern Manhwa (Solo Leveling Aesthetic)', 'Trapped in a hidden double dungeon, he receives a mysterious daily leveling system that removes all level caps.')">
+      <div style="font-weight:700; font-size:15px; margin-bottom:4px;">⚡ The Weakest Hunter's Awakening</div>
+      <div class="muted" style="font-size:13px;">System & Leveling • Solo Leveling Style</div>
+    </div>
+    <div class="preset-card" onclick="fillWebtoon('The Reborn Heavenly Demon in Modern Seoul', 'Baek Hyun', 'Webtoon / Manhwa - Murim & Martial Arts', 'Dark Anime Fantasy (Ufotable Style)', 'After dying in the martial world, the Supreme Demon Sect leader reincarnates into the body of an expelled high school hunter.')">
+      <div style="font-weight:700; font-size:15px; margin-bottom:4px;">🗡️ Reborn Heavenly Demon in Seoul</div>
+      <div class="muted" style="font-size:13px;">Murim + Modern Hunter • Dark Fantasy</div>
+    </div>
+    <div class="preset-card" onclick="fillWebtoon('Return of the SSS-Rank Disaster Mage', 'Lucas', 'Webtoon / Manhwa - Reincarnation & Regression', 'Korean Modern Manhwa (Solo Leveling Aesthetic)', 'Betrayed by his guild master at the final boss raid, he regresses 10 years into the past with all future memories.')">
+      <div style="font-weight:700; font-size:15px; margin-bottom:4px;">⏳ SSS-Rank Mage 10-Year Regression</div>
+      <div class="muted" style="font-size:13px;">Regression & Revenge • High Action</div>
+    </div>
   </div>
-  <div class="card" style="cursor:pointer;" onclick="fillExample('The Miracle of Bletchley Park', 'WWII & Cryptography', '1940-1945', 'Alan Turing and Gordon Welchman construct the Bombe machine cracking Enigma.')">
-    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">🔐 The Miracle of Bletchley Park</div>
-    <div class="muted" style="font-size:13px;">WWII & Cryptography • 1940s</div>
+</div>
+
+<!-- 2. Documentary Form -->
+<div id="tab-doc" class="tab-content">
+  <div class="card">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+      <span style="font-size:24px;">🏛️</span>
+      <div>
+        <h2 style="margin:0; text-transform:none; font-size:16px; color:var(--text);">Documentary & Real-World Case Generator</h2>
+        <div class="muted" style="font-size:12px;">Chronological, evidence-based documentary on history, business scandals, space missions, or crime cases.</div>
+      </div>
+    </div>
+
+    <form action="/runs/custom" method="post">
+      <input type="hidden" name="format_type" value="documentary">
+      
+      <div class="form-group">
+        <label class="form-label" for="doc_title">Video Title / Main Topic *</label>
+        <input type="text" id="doc_title" name="title" required placeholder="e.g. The Rise and Fall of Enron, or The Apollo 11 Alarm">
+        <div class="form-hint">The subject of the documentary. Research agent will investigate historical sources.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="doc_niche">Niche / Genre</label>
+          <input type="text" id="doc_niche" name="niche" value="Tech & History" placeholder="e.g. Tech History, Science, Business Fraud, True Crime">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="doc_era">Era / Timeframe</label>
+          <input type="text" id="doc_era" name="era" value="Modern" placeholder="e.g. 1969, 1990s, 2008 Financial Crisis">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="doc_turning_point">Key Turning Point (Optional)</label>
+        <textarea id="doc_turning_point" name="turning_point" placeholder="e.g. The single piece of whistleblower evidence or calculation that changed everything."></textarea>
+      </div>
+
+      <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+        <a class="btn secondary" href="/">Cancel</a>
+        <button class="btn" type="submit">🚀 Start Documentary Generation</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script>
-function fillExample(title, niche, era, tp) {
-  document.getElementById('title').value = title;
-  document.getElementById('niche').value = niche;
-  document.getElementById('era').value = era;
-  document.getElementById('turning_point').value = tp;
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  if (tab === 'webtoon') {
+    document.getElementById('tab-webtoon-btn').classList.add('active');
+    document.getElementById('tab-webtoon').classList.add('active');
+  } else {
+    document.getElementById('tab-doc-btn').classList.add('active');
+    document.getElementById('tab-doc').classList.add('active');
+  }
+}
+
+function fillWebtoon(title, protagonist, genre, style, tp) {
+  document.getElementById('webtoon_title').value = title;
+  document.getElementById('protagonist').value = protagonist;
+  document.getElementById('webtoon_genre').value = genre;
+  document.getElementById('art_style').value = style;
+  document.getElementById('webtoon_turning_point').value = tp;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>

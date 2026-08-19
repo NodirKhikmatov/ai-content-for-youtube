@@ -71,7 +71,23 @@ def _format_sources(results: list[SearchResult]) -> str:
     return "\n\n".join(f"[{r['title']}]({r['url']})\n{r['content']}" for r in results)
 
 
+def _is_webtoon(case: dict) -> bool:
+    jurisdiction = (case.get("jurisdiction") or "").lower()
+    return any(k in jurisdiction for k in ("webtoon", "manhwa", "manga", "anime", "recap", "comic"))
+
+
 def _gather_prompt(case: dict, results: list[SearchResult]) -> str:
+    if _is_webtoon(case):
+        return (
+            f"You are researching and analyzing a Webtoon / Manhwa / Manga story "
+            f"titled \"{case['title']}\" (Genre: {case.get('jurisdiction')}, Setting: {case.get('era')}).\n\n"
+            f"Key Arc / Awakening / Turning Point: {case.get('turning_point', '')}\n\n"
+            f"Source material / Context:\n{_format_sources(results)}\n\n"
+            f"Produce a research brief for a YouTube Manhwa Recap video: identify the protagonist's core conflict "
+            f"and power progression, the inciting awakening or system discovery, key battles, and the central turning point. "
+            f"State the thesis on what makes this story captivating, and list verified plot claims."
+        )
+
     return (
         f"You are researching a closed court case for a documentary video series "
         f"called \"The Turning Point\", whose format is: each episode reconstructs "
@@ -99,7 +115,7 @@ def _gather_prompt(case: dict, results: list[SearchResult]) -> str:
 
 def _counterpoint_prompt(case: dict, brief: ResearchBrief, results: list[SearchResult]) -> str:
     return (
-        f"You previously drafted this research brief for the case "
+        f"You previously drafted this research brief for "
         f"\"{case['title']}\":\n\n"
         f"Thesis: {brief.thesis}\nTurning point: {brief.turning_point}\n\n"
         f"Now actively look for disconfirming or complicating evidence — "
