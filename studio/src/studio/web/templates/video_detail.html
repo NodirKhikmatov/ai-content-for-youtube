@@ -104,24 +104,37 @@
 {% endif %}
 
 <!-- 📱 SHORTS SECTION -->
-<h2>📱 Shorts / TikTok Cut</h2>
+<h2>📱 Shorts / TikTok Cut (9:16 Vertical)</h2>
 <div class="card">
+  <div class="muted" style="font-size:13px; margin-bottom:12px;">High-retention 45-60s vertical cut for YouTube Shorts, TikTok, and Instagram Reels.</div>
   {% if short_handle and short_handle.status == "running" %}
-  <div class="empty">Generating short — this page refreshes automatically.</div>
+  <div class="empty">⚡ Generating vertical short with kinetic captions — this page refreshes automatically...</div>
   {% elif short_handle and short_handle.status == "failed" %}
-  <div style="color: var(--bad);">{{ short_handle.error }}</div>
+  <div style="color: var(--bad); padding:10px 0;">{{ short_handle.error }}</div>
   {% elif short_media_rel %}
-  <video class="vertical" controls src="/media/{{ video_id }}/{{ short_media_rel }}"></video>
+  <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+    <div>
+      <video class="vertical" controls src="/media/{{ video_id }}/{{ short_media_rel }}"></video>
+      <a class="btn secondary" style="width:100%; margin-top:8px; text-align:center; display:block;" href="/media/{{ video_id }}/{{ short_media_rel }}" download="short_{{ video_id[:8] }}.mp4">⬇️ Download Short (MP4)</a>
+    </div>
+    <div style="flex:1; min-width:260px;">
+      <div style="font-size:14px; font-weight:700; color:#818cf8; margin-bottom:6px;">📱 Shorts Script & Narration:</div>
+      <div style="background:#07090d; border:1px solid var(--border); border-radius:8px; padding:12px; font-size:13px; color:#cbd5e1; margin-bottom:10px;">
+        {{ short_output.narration if short_output else "Vertical short cut with synchronized voiceover and burnt-in subtitles." }}
+      </div>
+      <button class="copy-btn" onclick="copyText('{{ short_output.narration|escapejs if short_output else '' }} #Shorts #Viral #FYP', this)">📋 Copy Shorts Narration & Hashtags</button>
+    </div>
+  </div>
   {% else %}
-  <div class="empty">No short generated yet.</div>
+  <div class="empty">No vertical short generated yet. Click the button below to generate a viral 9:16 cut!</div>
   {% endif %}
 
   {% if can_make_short and not (short_handle and short_handle.status == "running") %}
-  <form action="/videos/{{ video_id }}/shorts" method="post" style="margin-top:10px;">
-    <button class="btn secondary" type="submit">{{ "Regenerate Short" if short_output else "⚡ Generate 9:16 Short" }}</button>
+  <form action="/videos/{{ video_id }}/shorts" method="post" style="margin-top:14px;">
+    <button class="btn" type="submit">{{ "🔄 Regenerate Short" if short_output else "⚡ Generate 9:16 Short (TikTok / Reels)" }}</button>
   </form>
   {% elif not can_make_short %}
-  <div class="muted" style="font-size:13px;">Needs Storytelling to have run first.</div>
+  <div class="muted" style="font-size:13px; margin-top:10px;">Needs Storytelling to have run first.</div>
   {% endif %}
 </div>
 

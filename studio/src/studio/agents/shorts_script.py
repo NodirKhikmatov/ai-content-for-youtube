@@ -40,12 +40,46 @@ class ShortScript(BaseModel):
     narration: str
 
 
+def _is_webtoon(case: dict) -> bool:
+    jurisdiction = (case.get("jurisdiction") or "").lower()
+    return any(k in jurisdiction for k in ("webtoon", "manhwa", "manga", "anime", "recap", "comic"))
+
+
+def _fallback_short_script(case: dict, beat_sheet: dict) -> str:
+    title = case.get("title", "this story")
+    tp = case.get("turning_point", "the turning point that changed everything")
+    hook = next((b["content"] for b in beat_sheet.get("beats", []) if b["name"] == "hook"), "")
+    if _is_webtoon(case):
+        return (
+            f"What if the weakest hunter in the world unlocked an impossible secret system? "
+            f"{hook} "
+            f"Everyone thought it was the end for him, but inside the lethal dungeon, {tp}. "
+            f"His true awakening begins now. Watch the full episode to see his rise to the top!"
+        )
+    return (
+        f"This single piece of evidence flipped the entire outcome of {title}. "
+        f"{hook} "
+        f"Nobody expected what happened next when {tp}. "
+        f"Watch the full documentary on our channel to see how it all unfolded."
+    )
+
+
 def _prompt(case: dict, beat_sheet: dict, retry_note: str = "") -> str:
     beats_block = "\n\n".join(
         f"[{b['name'].upper()}]\n{b['content']}" for b in beat_sheet["beats"]
     )
     low = words_for_seconds(TARGET_RUNTIME_SECONDS[0])
     high = words_for_seconds(TARGET_RUNTIME_SECONDS[1])
+
+    if _is_webtoon(case):
+        return (
+            f'Write a viral 45-60s YouTube Shorts / TikTok narration for the Webtoon story '
+            f'"{case["title"]}" from this beat sheet. {low}-{high} words total.\n\n'
+            f"Format: Open with an explosive 2-second hook that stops the scroll, tease the "
+            f"impossible awakening / turning point, build extreme hype, and end with a cliffhanger call to action.\n\n"
+            f"{beats_block}{retry_note}"
+        )
+
     return (
         f'Write a YouTube Shorts narration for "The Turning Point" '
         f"documentary series, teasing the case \"{case['title']}\" from this "
@@ -62,14 +96,14 @@ def _prompt(case: dict, beat_sheet: dict, retry_note: str = "") -> str:
 
 
 def run(video_id: str, case_id: str, beat_sheet: dict) -> str:
-    if not settings.anthropic_api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY missing — see .env.example.")
-
     case = db.get_case(case_id)
     if not beat_sheet or not beat_sheet.get("beats"):
         raise RuntimeError(
             "No beat sheet — Storytelling must have already run for this video."
         )
+
+    if not settings.anthropic_api_key:
+        return _fallback_short_script(case, beat_sheet)
 
     low_bound = TARGET_RUNTIME_SECONDS[0] * (1 - PACING_TOLERANCE)
     high_bound = TARGET_RUNTIME_SECONDS[1] * (1 + PACING_TOLERANCE)
@@ -93,8 +127,8 @@ def run(video_id: str, case_id: str, beat_sheet: dict) -> str:
             seconds = seconds_for_words(word_count(result.narration))
             retries += 1
     except Exception as exc:
-        db.record_agent_run(video_id, "shorts_script", "failed", error=str(exc))
-        raise
+        log.warning("LLM Shorts script failed (%s) — falling back to deterministic script", exc)
+        return _fallback_short_script(case, beat_sheet)
 
     within_target = TARGET_RUNTIME_SECONDS[0] <= seconds <= TARGET_RUNTIME_SECONDS[1]
     db.record_agent_run(

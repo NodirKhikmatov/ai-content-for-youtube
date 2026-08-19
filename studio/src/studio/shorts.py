@@ -72,12 +72,29 @@ def make_short_video(video_id: str) -> dict[str, Any]:
         )
     )
 
+    from studio.tools.audio_fx import mix_master_soundtrack
+
     matched_path = work_dir / "matched.mp4"
+    master_audio_path = work_dir / "master_audio.aac"
     assembled_path = work_dir / "assembled.mp4"
     try:
         match_video_to_audio_duration(clip_path, narration_seconds, matched_path)
-        mux_audio_over_video(matched_path, voice_path, assembled_path)
+
+        case = db.get_case(video["case_id"]) if video.get("case_id") else None
+        jurisdiction = (case.get("jurisdiction") or "").lower() if case else ""
+        is_webtoon = any(k in jurisdiction for k in ("webtoon", "manhwa", "manga", "anime"))
+
+        mix_master_soundtrack(
+            voice_path=voice_path,
+            out_path=master_audio_path,
+            is_webtoon=is_webtoon,
+            bgm_volume=settings.bgm_volume,
+            enable_bgm=settings.bgm_enabled,
+        )
+
+        mux_audio_over_video(matched_path, master_audio_path, assembled_path)
     finally:
+        master_audio_path.unlink(missing_ok=True)
         matched_path.unlink(missing_ok=True)
 
     log.info("shorts: transcribing for captions")
