@@ -54,15 +54,20 @@ def get_connection() -> Iterator[Connection[dict[str, Any]]]:
 # --- users & authentication ------------------------------------------
 
 
-def create_user(email: str, password_hash: str, full_name: str = "") -> dict[str, Any]:
+def create_user(
+    email: str,
+    password_hash: str,
+    full_name: str = "",
+    is_admin: bool = False,
+) -> dict[str, Any]:
     with get_connection() as conn:
         row = conn.execute(
             """
-            insert into users (email, password_hash, full_name)
-            values (%s, %s, %s)
-            returning id, email, full_name, settings, created_at
+            insert into users (email, password_hash, full_name, is_admin)
+            values (%s, %s, %s, %s)
+            returning id, email, full_name, is_admin, settings, created_at
             """,
-            (email.lower().strip(), password_hash, full_name.strip()),
+            (email.lower().strip(), password_hash, full_name.strip(), is_admin),
         ).fetchone()
         if row is None:
             raise RuntimeError("Failed to create user")
@@ -72,7 +77,7 @@ def create_user(email: str, password_hash: str, full_name: str = "") -> dict[str
 def get_user_by_email(email: str) -> dict[str, Any] | None:
     with get_connection() as conn:
         row = conn.execute(
-            "select id, email, password_hash, full_name, settings, created_at from users where email = %s",
+            "select id, email, password_hash, full_name, is_admin, settings, created_at from users where email = %s",
             (email.lower().strip(),),
         ).fetchone()
         return dict(row) if row else None
@@ -81,10 +86,62 @@ def get_user_by_email(email: str) -> dict[str, Any] | None:
 def get_user_by_id(user_id: Id) -> dict[str, Any] | None:
     with get_connection() as conn:
         row = conn.execute(
-            "select id, email, password_hash, full_name, settings, created_at from users where id = %s",
+            "select id, email, password_hash, full_name, is_admin, settings, created_at from users where id = %s",
             (user_id,),
         ).fetchone()
         return dict(row) if row else None
+
+
+def list_users(limit: int = 100) -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            select id, email, full_name, is_admin, settings, created_at
+            from users
+            order by created_at desc
+            limit %s
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def count_users() -> int:
+    with get_connection() as conn:
+        row = conn.execute("select count(*) as c from users").fetchone()
+        return int(row["c"]) if row else 0
+
+
+def delete_user(user_id: Id) -> None:
+    with get_connection() as conn:
+        conn.execute("delete from users where id = %s", (user_id,))
+
+
+def toggle_user_admin(user_id: Id) -> bool:
+    with get_connection() as conn:
+        row = conn.execute(
+            "update users set is_admin = not is_admin where id = %s returning is_admin",
+            (user_id,),
+        ).fetchone()
+        return bool(row["is_admin"]) if row else False
+
+
+def get_admin_stats() -> dict[str, Any]:
+    with get_connection() as conn:
+        u_count = conn.execute("select count(*) as c from users").fetchone()["c"]
+        v_count = conn.execute("select count(*) as c from videos").fetchone()["c"]
+        pub_count = conn.execute("select count(*) as c from videos where status = 'published'").fetchone()["c"]
+        runs_count = conn.execute("select count(*) as c from agent_runs").fetchone()["c"]
+        shorts_count = conn.execute("select count(*) as c from agent_runs where agent_name = 'shorts_assembly' and status = 'succeeded'").fetchone()["c"]
+        cases_count = conn.execute("select count(*) as c from cases").fetchone()["c"]
+        return {
+            "total_users": int(u_count),
+            "total_videos": int(v_count),
+            "total_published": int(pub_count),
+            "total_runs": int(runs_count),
+            "total_shorts": int(shorts_count),
+            "total_cases": int(cases_count),
+        }
 
 
 def update_user_profile(
@@ -119,8 +176,12 @@ def ensure_default_user() -> dict[str, Any]:
 
     user = get_user_by_email("admin@studio.ai")
     if user:
+        if not user.get("is_admin"):
+            with get_connection() as conn:
+                conn.execute("update users set is_admin = true where id = %s", (user["id"],))
+            user["is_admin"] = True
         return user
-    return create_user("admin@studio.ai", hash_password("admin123"), "Studio Admin")
+    return create_user("admin@studio.ai", hash_password("admin123"), "Studio Admin", is_admin=True)
 
 
 # --- channels ---------------------------------------------------------

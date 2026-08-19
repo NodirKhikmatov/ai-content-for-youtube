@@ -9,6 +9,7 @@ create table if not exists users (
     email        text unique not null,
     password_hash text not null,
     full_name    text,
+    is_admin     boolean not null default false,
     settings     jsonb not null default '{}'::jsonb,
     created_at   timestamptz not null default now()
 );

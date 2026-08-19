@@ -76,12 +76,18 @@
     <a href="/create">✨ Create Video</a>
     <a href="/videos">Videos</a>
     <a href="/backlog">Backlog</a>
+    {% if current_user and current_user.is_admin %}
+    <a href="/admin" style="color: #fbbf24; font-weight: 600;">👑 Admin Panel</a>
+    {% endif %}
   </div>
   <div class="header-right">
     <a class="btn secondary" href="/settings" style="padding:6px 12px; font-size:13px;">⚙️ Settings</a>
     {% if current_user %}
     <a href="/profile" style="display:flex; align-items:center; gap:6px; font-weight:600; color:#818cf8;">
       <span>👤 {{ current_user.full_name or current_user.email.split('@')[0] }}</span>
+      {% if current_user.is_admin %}
+      <span class="badge ok" style="font-size:9px; padding:1px 6px;">ADMIN</span>
+      {% endif %}
     </a>
     <a href="/logout" style="font-size:13px; color:var(--muted);">Logout</a>
     {% else %}

@@ -168,6 +168,48 @@ def handle_update_profile(
     return RedirectResponse("/profile?saved=true", status_code=303)
 
 
+# --- Admin SuperUser Routes ------------------------------------------
+
+
+@app.get("/admin")
+def admin_dashboard(request: Request):
+    user = _get_current_user(request)
+    if not user or not user.get("is_admin"):
+        return RedirectResponse("/login", status_code=303)
+
+    stats = db.get_admin_stats()
+    users = db.list_users(limit=200)
+    recent_videos = db.list_videos(limit=20)
+
+    context = {
+        "stats": stats,
+        "users": users,
+        "recent_videos": recent_videos,
+        "settings": settings,
+    }
+    return _render(request, "admin.html", context)
+
+
+@app.post("/admin/users/{user_id}/toggle_admin")
+def handle_toggle_admin(request: Request, user_id: str):
+    user = _get_current_user(request)
+    if not user or not user.get("is_admin"):
+        return RedirectResponse("/login", status_code=303)
+    db.toggle_user_admin(user_id)
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.post("/admin/users/{user_id}/delete")
+def handle_delete_user(request: Request, user_id: str):
+    user = _get_current_user(request)
+    if not user or not user.get("is_admin"):
+        return RedirectResponse("/login", status_code=303)
+    # Prevent deleting own account
+    if str(user["id"]) != str(user_id):
+        db.delete_user(user_id)
+    return RedirectResponse("/admin", status_code=303)
+
+
 # --- Studio Dashboard & Routes ---------------------------------------
 
 

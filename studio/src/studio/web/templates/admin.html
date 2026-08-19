@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}👑 SuperAdmin Dashboard — AI YouTube Studio{% endblock %}
+{% block head %}
+<style>
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+  .kpi-val { font-size: 28px; font-weight: 800; color: #fff; margin-top: 4px; font-family: monospace; }
+  .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .health-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .health-dot.green { background: #10b981; box-shadow: 0 0 8px #10b981; }
+</style>
+{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+  <div>
+    <h1 style="margin:0 0 4px; font-size: 24px;">👑 Platform SuperAdmin Panel</h1>
+    <div class="muted" style="font-size:14px;">Global platform oversight, user management, and system diagnostics.</div>
+  </div>
+  <div>
+    <a class="btn secondary" href="/">← Studio Dashboard</a>
+  </div>
+</div>
+
+<!-- 📊 KPI ANALYTICS CARDS -->
+<div class="kpi-grid">
+  <div class="kpi-card" style="border-top: 3px solid #818cf8;">
+    <div class="kpi-label">👥 Total Users</div>
+    <div class="kpi-val" style="color: #818cf8;">{{ stats.total_users }}</div>
+  </div>
+  <div class="kpi-card" style="border-top: 3px solid #38bdf8;">
+    <div class="kpi-label">🎬 Videos Created</div>
+    <div class="kpi-val" style="color: #38bdf8;">{{ stats.total_videos }}</div>
+  </div>
+  <div class="kpi-card" style="border-top: 3px solid #34d399;">
+    <div class="kpi-label">🚀 Published YouTube</div>
+    <div class="kpi-val" style="color: #34d399;">{{ stats.total_published }}</div>
+  </div>
+  <div class="kpi-card" style="border-top: 3px solid #f472b6;">
+    <div class="kpi-label">📱 9:16 Shorts</div>
+    <div class="kpi-val" style="color: #f472b6;">{{ stats.total_shorts }}</div>
+  </div>
+  <div class="kpi-card" style="border-top: 3px solid #fbbf24;">
+    <div class="kpi-label">⚡ AI Agent Runs</div>
+    <div class="kpi-val" style="color: #fbbf24;">{{ stats.total_runs }}</div>
+  </div>
+</div>
+
+<!-- 👥 USER MANAGEMENT TABLE -->
+<h2>👥 User Management ({{ users|length }})</h2>
+<div class="card" style="padding: 0; overflow: hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>API Keys</th>
+        <th>Joined</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td style="font-weight: 600;">
+          {{ u.full_name or "Unnamed User" }}
+          {% if u.id == current_user.id %}
+          <span class="badge ok" style="font-size:10px; margin-left:4px;">You</span>
+          {% endif %}
+        </td>
+        <td><code>{{ u.email }}</code></td>
+        <td>
+          {% if u.is_admin %}
+          <span class="badge ok">👑 Admin</span>
+          {% else %}
+          <span class="badge muted">👤 User</span>
+          {% endif %}
+        </td>
+        <td>
+          {% set key_count = u.settings|length if u.settings else 0 %}
+          <span class="muted" style="font-size:13px;">{{ key_count }} keys configured</span>
+        </td>
+        <td class="muted" style="font-size:13px;">{{ u.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        <td style="text-align:right;">
+          <form action="/admin/users/{{ u.id }}/toggle_admin" method="post" style="display:inline;">
+            <button class="btn secondary" style="padding: 4px 10px; font-size:12px;" type="submit">
+              {{ "Demote" if u.is_admin else "Make Admin" }}
+            </button>
+          </form>
+          {% if u.id != current_user.id %}
+          <form action="/admin/users/{{ u.id }}/delete" method="post" style="display:inline; margin-left: 6px;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+            <button class="btn danger" style="padding: 4px 10px; font-size:12px;" type="submit">🗑 Delete</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ⚙️ SYSTEM DIAGNOSTICS & HARDWARE HEALTH -->
+<h2>⚙️ System Diagnostics & Active Backends</h2>
+<div class="card">
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+    <div>
+      <div class="muted" style="font-size:12px; text-transform:uppercase;">Database</div>
+      <div style="font-weight:600; font-size:14px; margin-top:4px; display:flex; align-items:center;">
+        <span class="health-dot green"></span> PostgreSQL (pgvector)
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:2px;">Port 5434 — Operational</div>
+    </div>
+
+    <div>
+      <div class="muted" style="font-size:12px; text-transform:uppercase;">Voice Synthesis</div>
+      <div style="font-weight:600; font-size:14px; margin-top:4px;">
+        {{ settings.voice_backend|upper }}
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:2px;">ElevenLabs Multilingual V2</div>
+    </div>
+
+    <div>
+      <div class="muted" style="font-size:12px; text-transform:uppercase;">Video Generation</div>
+      <div style="font-weight:600; font-size:14px; margin-top:4px;">
+        {{ settings.video_gen_backend|upper }}
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:2px;">Kling AI / Higgsfield</div>
+    </div>
+
+    <div>
+      <div class="muted" style="font-size:12px; text-transform:uppercase;">Soundtrack & SFX</div>
+      <div style="font-weight:600; font-size:14px; margin-top:4px;">
+        {{ "ENABLED (15% Ducking)" if settings.bgm_enabled else "DISABLED" }}
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:2px;">Cinematic Audio Engine</div>
+    </div>
+  </div>
+</div>
+
+<!-- 🎬 RECENT PLATFORM VIDEOS -->
+<h2>🎬 Recent Platform Videos</h2>
+<div class="card" style="padding: 0; overflow: hidden;">
+  <table>
+    <thead>
+      <tr>
+        <th>Video Title</th>
+        <th>Status</th>
+        <th>YouTube ID</th>
+        <th>Created</th>
+        <th style="text-align:right;">View</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in recent_videos %}
+      <tr>
+        <td style="font-weight:600;">
+          <a class="row-link" href="/videos/{{ v.id }}">{{ v.title or "Untitled" }}</a>
+        </td>
+        <td><span class="badge {{ v.status }}">{{ v.status }}</span></td>
+        <td>
+          {% if v.youtube_video_id %}
+          <code>{{ v.youtube_video_id }}</code>
+          {% else %}
+          <span class="muted" style="font-size:12px;">Not published</span>
+          {% endif %}
+        </td>
+        <td class="muted" style="font-size:13px;">{{ v.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        <td style="text-align:right;">
+          <a class="btn secondary" style="padding: 4px 10px; font-size:12px;" href="/videos/{{ v.id }}">Inspect →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
