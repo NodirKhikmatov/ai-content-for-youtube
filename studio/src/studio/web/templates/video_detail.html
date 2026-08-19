@@ -138,6 +138,44 @@
   {% endif %}
 </div>
 
+<!-- 🌍 MULTI-LANGUAGE DUBBING -->
+<h2>🌍 Multi-Language Dubbing (Ko'p Tilli Dublyaj)</h2>
+<div class="card">
+  <div class="muted" style="font-size:13px; margin-bottom:12px;">
+    Translate and dub this video into any language with native AI voiceover, synchronized captions, and ducked soundtrack.
+  </div>
+
+  <form action="/videos/{{ video_id }}/dub" method="post" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+    <select name="target_lang" style="max-width:260px;">
+      {% for code, label in supported_languages.items() %}
+      <option value="{{ code }}">{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">🎙️ Dub Video into Selected Language</button>
+  </form>
+
+  {% if dubbed_versions %}
+  <div style="font-size:14px; font-weight:700; color:#38bdf8; margin:16px 0 10px;">🎧 Available Dubbed Editions:</div>
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+    {% for dub in dubbed_versions %}
+    <div style="background:#07090d; border:1px solid var(--border); border-radius:10px; padding:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-weight:700; font-size:14px;">{{ dub.lang_name }}</span>
+        <span class="badge ok">{{ "%.1f"|format(dub.duration_seconds) }}s</span>
+      </div>
+      <div style="font-size:13px; color:#cbd5e1; margin-bottom:10px; font-weight:500;">{{ dub.translated_title }}</div>
+      {% if dub.media_rel %}
+      <video controls src="/media/{{ video_id }}/{{ dub.media_rel }}" style="width:100%; border-radius:6px; margin-bottom:8px;"></video>
+      <a class="btn secondary" style="width:100%; text-align:center; display:block; font-size:12px;" href="/media/{{ video_id }}/{{ dub.media_rel }}" download="dubbed_{{ dub.lang_code }}_{{ video_id[:6] }}.mp4">⬇️ Download Dubbed Video (MP4)</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty" style="margin-top:10px;">No foreign language dubs generated yet. Select a language above to create one.</div>
+  {% endif %}
+</div>
+
 <!-- 🔍 QUALITY & COMPLIANCE -->
 {% if quality_verdict %}
 <h2>Quality Review</h2>

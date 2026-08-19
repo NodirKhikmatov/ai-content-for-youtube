@@ -221,6 +221,22 @@ def video_detail(request: Request, video_id: str):
     thumb_paths = publishing_output.get("thumbnail_paths", [])
     thumb_media_urls = [f"/media/{video_id}/thumbnails/thumbnail_{i + 1}.jpg" for i in range(len(thumb_paths))]
 
+    # Find all dubbed language versions
+    dubbed_versions = []
+    for r in agent_runs:
+        if r["agent_name"].startswith("dubbing_") and r["status"] == "succeeded" and r.get("output"):
+            out = r["output"]
+            dubbed_versions.append({
+                "lang_code": out.get("target_lang"),
+                "lang_name": out.get("lang_name"),
+                "translated_title": out.get("translated_title"),
+                "translated_narration": out.get("translated_narration"),
+                "media_rel": _media_rel(out.get("final_path"), video_id),
+                "duration_seconds": out.get("duration_seconds", 0),
+            })
+
+    from studio.agents.dubbing import SUPPORTED_LANGUAGES, dub_video
+
     context: dict[str, Any] = {
         "video": video,
         "video_id": video_id,
@@ -232,6 +248,8 @@ def video_detail(request: Request, video_id: str):
         "short_handle": short_handle,
         "publishing_output": publishing_output,
         "thumb_media_urls": thumb_media_urls,
+        "dubbed_versions": dubbed_versions,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "min_dimension_score": MIN_DIMENSION_SCORE,
         "assembled_media_rel": _media_rel(video.get("assembled_video_path"), video_id),
         "short_media_rel": _media_rel(
@@ -239,6 +257,13 @@ def video_detail(request: Request, video_id: str):
         ),
     }
     return templates.TemplateResponse(request, "video_detail.html", context)
+
+
+@app.post("/videos/{video_id}/dub")
+def handle_dub_video(video_id: str, target_lang: str = Form("uz")):
+    from studio.agents.dubbing import dub_video
+    dub_video(video_id, target_lang)
+    return RedirectResponse(f"/videos/{video_id}", status_code=303)
 
 
 from studio.agents.seo import generate_seo_metadata
