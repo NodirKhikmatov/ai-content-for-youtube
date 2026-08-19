@@ -1700,125 +1700,196 @@
   <section id="webtoon" style="padding: 80px 24px; position: relative; z-index: 1; overflow: hidden;">
     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:500px;background:radial-gradient(ellipse at 30% 50%, rgba(199,119,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 50%, rgba(255,61,110,0.06) 0%, transparent 60%);pointer-events:none;"></div>
     <div style="max-width:1100px; margin:0 auto;">
-      <div class="fade-in" style="text-align:center; margin-bottom:56px;">
+      <div class="fade-in" style="text-align:center; margin-bottom:40px;">
         <div class="section-label">🎭 Webtoon Mode</div>
         <h2 class="section-title">Manhwa-style drama.<br><span style="background:linear-gradient(90deg,#c77dff,#ff6ec7,#ff3d6e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Panel by panel.</span></h2>
         <p class="section-sub" style="margin:0 auto;">Switch to Webtoon Mode and the AI generates cinematic comic-panel style videos — each scene rendered as a dramatic manhwa illustration with dialogue bubbles, action lines, and character close-ups.</p>
+        
+        <!-- View Toggle Tabs -->
+        <div style="display:inline-flex; gap:6px; background:#0c0b14; border:1px solid rgba(199,119,255,0.3); border-radius:12px; padding:4px; margin-top:24px;">
+          <button id="webtoon-tab-video" onclick="switchWebtoonTab('video')" style="background:linear-gradient(135deg,#c77dff,#ff3d6e); color:white; border:none; padding:8px 20px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s;">
+            🎬 Animated Video Player
+          </button>
+          <button id="webtoon-tab-panels" onclick="switchWebtoonTab('panels')" style="background:transparent; color:var(--muted); border:none; padding:8px 20px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s;">
+            📜 Comic Panel Reader
+          </button>
+        </div>
       </div>
 
       <div style="display:grid; grid-template-columns:1fr 340px; gap:32px; align-items:start;" class="fade-in">
 
-        <!-- LEFT: Webtoon Reader mockup -->
-        <div style="background:#08060c; border:1px solid rgba(199,119,255,0.2); border-radius:20px; overflow:hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 60px rgba(199,119,255,0.08);">
+        <!-- LEFT: Dynamic Webtoon Display (Video Player or Panel Reader) -->
+        <div style="background:#08060c; border:1px solid rgba(199,119,255,0.25); border-radius:20px; overflow:hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 60px rgba(199,119,255,0.1);">
+          
+          <!-- Header bar -->
           <div style="background:#0e0b14; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:8px;">
             <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57;"></div>
             <div style="width:8px;height:8px;border-radius:50%;background:#febc2e;"></div>
             <div style="width:8px;height:8px;border-radius:50%;background:#28c840;"></div>
-            <span style="font-size:12px;color:var(--muted);margin-left:6px;font-family:monospace;">🎭 Episode 01 — He Risked Everything</span>
+            <span id="webtoon-header-title" style="font-size:12px;color:var(--muted);margin-left:6px;font-family:monospace;">🎭 Webtoon Video Player — Ep 01: He Risked Everything</span>
+            <span id="webtoon-scene-indicator" style="margin-left:auto;font-size:11px;color:#c77dff;font-weight:700;background:rgba(199,119,255,0.15);padding:2px 8px;border-radius:4px;">Scene 1/6</span>
           </div>
-          <div style="max-height:600px; overflow-y:auto;" id="webtoon-scroll">
 
-            <!-- PANEL 1: Title splash -->
-            <div class="webtoon-panel" data-delay="0" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#0d0015,#1a0030,#0d0015);min-height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:2px solid rgba(199,119,255,0.15);">
-              <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent,transparent 8px,rgba(199,119,255,0.03) 8px,rgba(199,119,255,0.03) 9px);"></div>
-              <div style="position:relative;z-index:1;text-align:center;padding:32px 20px;">
-                <div style="font-size:9px;letter-spacing:.25em;color:#c77dff;text-transform:uppercase;font-weight:700;margin-bottom:10px;">THE TURNING POINT · EPISODE 01</div>
-                <div style="font-size:clamp(28px,5vw,52px);font-weight:900;line-height:1.05;color:white;text-shadow:0 0 40px rgba(199,119,255,0.6),0 4px 20px rgba(0,0,0,0.9);">He Risked<br><span style="background:linear-gradient(90deg,#ff3d6e,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Everything</span></div>
-                <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4);font-style:italic;">to Expose Them</div>
-              </div>
-            </div>
-
-            <!-- PANEL 2: Night city establishing shot -->
-            <div class="webtoon-panel" data-delay="120" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#060e1a,#0c1a2e);min-height:260px;overflow:hidden;border-bottom:2px solid rgba(255,255,255,0.04);">
-              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(0,210,255,0.015) 40px,rgba(0,210,255,0.015) 41px);"></div>
-              <div style="position:absolute;top:24px;right:48px;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.95),rgba(200,220,255,0.5) 50%,transparent 70%);box-shadow:0 0 40px rgba(200,220,255,0.4);"></div>
-              <div style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:flex-end;gap:2px;">
-                <div style="flex:1;background:#060a10;height:70px;"></div>
-                <div style="flex:1.6;background:#060a10;height:130px;position:relative;"><div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#ff9f43;border-radius:50%;box-shadow:0 0 8px #ff9f43;"></div></div>
-                <div style="flex:0.8;background:#060a10;height:55px;"></div>
-                <div style="flex:2;background:#060a10;height:170px;position:relative;"><div style="position:absolute;top:20px;width:100%;display:flex;justify-content:space-around;padding:0 8px;"><div style="width:3px;height:3px;background:#00d2ff;border-radius:50%;box-shadow:0 0 5px #00d2ff;"></div><div style="width:3px;height:3px;background:#00d2ff;border-radius:50%;box-shadow:0 0 5px #00d2ff;"></div></div></div>
-                <div style="flex:0.7;background:#060a10;height:85px;"></div>
-                <div style="flex:1.4;background:#060a10;height:110px;"></div>
-                <div style="flex:1;background:#060a10;height:90px;"></div>
-              </div>
-              <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;z-index:2;">
-                <div style="font-size:11px;color:rgba(0,210,255,0.65);font-style:italic;font-weight:600;">Seoul, South Korea · 3:47 AM</div>
-              </div>
-            </div>
-
-            <!-- PANEL 3: Hero dialogue -->
-            <div class="webtoon-panel" data-delay="240" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(135deg,#150008,#250015);min-height:280px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;border-bottom:2px solid rgba(255,61,110,0.2);">
-              <div style="position:absolute;inset:0;background:conic-gradient(from 45deg at 80% 30%,transparent 0deg,rgba(255,61,110,0.04) 30deg,transparent 60deg,transparent 360deg);"></div>
-              <div style="position:absolute;right:0;top:0;bottom:0;width:42%;background:linear-gradient(180deg,#2a0015,#3d0020);">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;opacity:0.35;">🕵️</div>
-                <div style="position:absolute;inset:0;background:linear-gradient(90deg,#150008,transparent 40%);"></div>
-              </div>
-              <div style="position:relative;z-index:2;margin:28px 20px 0;">
-                <div style="background:white;border-radius:12px 12px 12px 4px;padding:14px 18px;display:inline-block;max-width:65%;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-                  <div style="font-size:14px;font-weight:800;color:#1a0008;line-height:1.4;">"They told me to<br>stay silent."</div>
-                  <div style="position:absolute;bottom:-10px;left:14px;width:0;height:0;border-left:10px solid transparent;border-right:6px solid transparent;border-top:10px solid white;"></div>
+          <!-- VIEW 1: ANIMATED VIDEO PLAYER -->
+          <div id="webtoon-video-view" style="display:block; position:relative;">
+            <!-- Main screen canvas / scene frame -->
+            <div id="wt-screen" style="position:relative; aspect-ratio:16/9; min-height:360px; background:linear-gradient(135deg,#0d0015,#1a0030,#0d0015); overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="toggleWebtoonVideo()">
+              
+              <!-- Scene 1: Title Splash -->
+              <div id="wt-scene-1" class="wt-scene" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; transition:opacity .5s ease;">
+                <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent,transparent 8px,rgba(199,119,255,0.04) 8px,rgba(199,119,255,0.04) 9px);"></div>
+                <div style="position:relative;z-index:1;">
+                  <div style="font-size:10px;letter-spacing:.3em;color:#c77dff;text-transform:uppercase;font-weight:800;margin-bottom:12px;">AI WEBTOON DOCUMENTARY</div>
+                  <div style="font-size:clamp(26px,4.5vw,46px);font-weight:900;line-height:1.1;color:white;text-shadow:0 0 30px rgba(199,119,255,0.8), 0 4px 16px rgba(0,0,0,0.9);">
+                    He Risked<br><span style="background:linear-gradient(90deg,#ff3d6e,#ff9f43,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">EVERYTHING</span>
+                  </div>
+                  <div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.6);font-style:italic;">Episode 01: The Whistleblower</div>
                 </div>
               </div>
-              <div style="position:relative;z-index:2;margin:0 20px 28px;text-align:right;">
-                <div style="background:rgba(255,61,110,0.1);border:1px solid rgba(255,61,110,0.4);border-radius:12px 4px 12px 12px;padding:10px 14px;display:inline-block;max-width:55%;">
-                  <div style="font-size:11px;color:#ff8fab;font-style:italic;line-height:1.4;">"But I had the<br>documents."</div>
+
+              <!-- Scene 2: City at Night -->
+              <div id="wt-scene-2" class="wt-scene" style="position:absolute; inset:0; display:none; background:linear-gradient(180deg,#060e1a,#0c1a2e); overflow:hidden; transition:opacity .5s ease;">
+                <div style="position:absolute;top:20px;right:40px;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.95),rgba(200,220,255,0.5) 50%,transparent 70%);box-shadow:0 0 30px rgba(200,220,255,0.5);"></div>
+                <div style="position:absolute;bottom:0;left:0;right:0;display:flex;align-items:flex-end;gap:2px;">
+                  <div style="flex:1;background:#050810;height:90px;"></div>
+                  <div style="flex:1.5;background:#050810;height:150px;position:relative;"><div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:#ff9f43;border-radius:50%;box-shadow:0 0 8px #ff9f43;"></div></div>
+                  <div style="flex:2;background:#050810;height:190px;position:relative;"><div style="position:absolute;top:20px;width:100%;display:flex;justify-content:space-around;padding:0 6px;"><div style="width:3px;height:3px;background:#00d2ff;border-radius:50%;box-shadow:0 0 6px #00d2ff;"></div><div style="width:3px;height:3px;background:#00d2ff;border-radius:50%;box-shadow:0 0 6px #00d2ff;"></div></div></div>
+                  <div style="flex:1.2;background:#050810;height:120px;"></div>
+                  <div style="flex:1.8;background:#050810;height:170px;"></div>
+                </div>
+                <div style="position:absolute;bottom:24px;left:20px;right:20px;z-index:2;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);border:1px solid rgba(0,210,255,0.3);border-radius:10px;padding:10px 16px;">
+                  <div style="font-size:11px;color:#00d2ff;font-weight:700;">[NARRATOR] Daniel (Authoritative)</div>
+                  <div style="font-size:13.5px;color:white;font-weight:600;margin-top:2px;">"Midnight in Seoul. Behind the glass towers of MegaCorp, a covert operation was underway."</div>
                 </div>
               </div>
-              <div style="position:absolute;top:50%;left:10px;transform:translateY(-50%) rotate(-8deg);font-size:30px;font-weight:900;color:rgba(255,61,110,0.12);font-style:italic;letter-spacing:-1px;">CRASH</div>
-            </div>
 
-            <!-- PANEL 4: Split confrontation -->
-            <div class="webtoon-panel" data-delay="360" style="opacity:0;transform:translateY(20px);transition:all .5s ease;display:grid;grid-template-columns:1fr 1fr;min-height:200px;border-bottom:2px solid rgba(255,255,255,0.04);">
-              <div style="background:linear-gradient(135deg,#001520,#003050);position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;border-right:3px solid #0a0a0a;">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:0.35;">👔</div>
-                <div style="position:relative;z-index:1;max-width:90%;">
-                  <div style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.4);border-radius:8px 8px 8px 2px;padding:8px 10px;">
-                    <div style="font-size:11px;color:#00d2ff;font-weight:700;line-height:1.4;">"You have no idea<br>who you're dealing with."</div>
+              <!-- Scene 3: Hero Dialogue Close-up -->
+              <div id="wt-scene-3" class="wt-scene" style="position:absolute; inset:0; display:none; background:linear-gradient(135deg,#18000a,#2d0018); overflow:hidden; transition:opacity .5s ease;">
+                <div style="position:absolute;right:0;top:0;bottom:0;width:40%;background:linear-gradient(180deg,#35001c,#4a0028);clip-path:polygon(25% 0%,100% 0%,100% 100%,0% 100%);display:flex;align-items:center;justify-content:center;">
+                  <span style="font-size:80px;opacity:0.5;">🕵️</span>
+                </div>
+                <div style="position:absolute;top:30px;left:30px;max-width:55%;background:white;border-radius:14px 14px 14px 2px;padding:14px 18px;box-shadow:0 8px 24px rgba(0,0,0,0.6);">
+                  <div style="font-size:11px;font-weight:800;color:#ff3d6e;text-transform:uppercase;margin-bottom:2px;">[HERO] Rachel</div>
+                  <div style="font-size:14px;font-weight:800;color:#111;line-height:1.35;">"They told me to stay silent. But the truth will destroy them."</div>
+                </div>
+                <div style="position:absolute;bottom:24px;left:30px;background:rgba(255,61,110,0.15);border:1px solid rgba(255,61,110,0.4);border-radius:8px;padding:8px 14px;">
+                  <span style="font-size:12px;color:#ff8fab;font-style:italic;">*Hands shaking, holding encrypted USB drive*</span>
+                </div>
+              </div>
+
+              <!-- Scene 4: Split Confrontation -->
+              <div id="wt-scene-4" class="wt-scene" style="position:absolute; inset:0; display:none; grid-template-columns:1fr 1fr; transition:opacity .5s ease;">
+                <div style="background:linear-gradient(135deg,#001424,#002a48);position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:20px;border-right:3px solid #08060c;">
+                  <div style="font-size:40px;opacity:0.3;text-align:right;">👔</div>
+                  <div style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.4);border-radius:10px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:800;color:#00d2ff;">[VILLAIN] Arnold</div>
+                    <div style="font-size:12.5px;font-weight:700;color:white;margin-top:2px;">"You have no idea who you're dealing with."</div>
                   </div>
                 </div>
-                <div style="position:absolute;top:10px;right:10px;font-size:14px;color:rgba(0,210,255,0.5);">💢</div>
-              </div>
-              <div style="background:linear-gradient(135deg,#200010,#400020);position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:0.35;">🧑‍💼</div>
-                <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 6px,rgba(255,61,110,0.025) 6px,rgba(255,61,110,0.025) 7px);"></div>
-                <div style="position:relative;z-index:1;max-width:90%;">
-                  <div style="background:white;border-radius:8px 8px 2px 8px;padding:8px 10px;">
-                    <div style="font-size:11px;color:#1a0008;font-weight:800;line-height:1.4;">"I know exactly<br>who I'm dealing with."</div>
+                <div style="background:linear-gradient(135deg,#240010,#480020);position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:20px;">
+                  <div style="font-size:40px;opacity:0.3;text-align:right;">🧑‍💼</div>
+                  <div style="background:white;border-radius:10px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:800;color:#ff3d6e;">[HERO] Rachel</div>
+                    <div style="font-size:12.5px;font-weight:800;color:#111;margin-top:2px;">"I know exactly who you are."</div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- PANEL 5: Revelation flash -->
-            <div class="webtoon-panel" data-delay="480" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#0a0510,#150a20);min-height:160px;overflow:hidden;border-bottom:2px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;">
-              <div style="position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,204,0,0.04) 10deg,transparent 20deg,transparent 30deg,rgba(255,204,0,0.04) 40deg,transparent 50deg,transparent 60deg,rgba(255,204,0,0.04) 70deg,transparent 80deg);transform:scale(2.5);"></div>
-              <div style="position:relative;z-index:1;text-align:center;">
-                <div style="font-size:16px;font-weight:900;color:#ffcc00;letter-spacing:.15em;text-shadow:0 0 20px rgba(255,204,0,0.8),0 0 50px rgba(255,100,0,0.5);transform:skew(-5deg);display:inline-block;">THE TRUTH IS REVEALED</div>
-                <div style="font-size:40px;margin-top:8px;filter:drop-shadow(0 0 16px rgba(255,204,0,0.7));">⚡</div>
-              </div>
-            </div>
-
-            <!-- PANEL 6: Emotional close-up -->
-            <div class="webtoon-panel" data-delay="600" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#080310,#120818);min-height:240px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:2px solid rgba(199,119,255,0.2);">
-              <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(199,119,255,0.2),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-              <div style="position:relative;z-index:1;text-align:center;padding:28px 20px;">
-                <div style="font-size:60px;margin-bottom:14px;">😰</div>
-                <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:14px 18px;max-width:260px;margin:0 auto;">
-                  <div style="font-size:15px;font-weight:800;color:white;line-height:1.4;">"This is bigger<br>than I thought."</div>
+              <!-- Scene 5: Revelation & Action SFX -->
+              <div id="wt-scene-5" class="wt-scene" style="position:absolute; inset:0; display:none; background:linear-gradient(180deg,#0a0510,#150a24); align-items:center; justify-content:center; text-align:center; transition:opacity .5s ease;">
+                <div style="position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,204,0,0.06) 10deg,transparent 20deg,transparent 30deg,rgba(255,204,0,0.06) 40deg,transparent 50deg,transparent 60deg,rgba(255,204,0,0.06) 70deg,transparent 80deg);transform:scale(2);"></div>
+                <div style="position:relative;z-index:1;">
+                  <div style="font-size:18px;font-weight:900;color:#ffcc00;letter-spacing:.2em;text-shadow:0 0 24px rgba(255,204,0,0.9),0 0 50px rgba(255,100,0,0.6);transform:skew(-6deg);">
+                    THE DOCUMENTS LEAKED
+                  </div>
+                  <div style="font-size:48px;margin:10px 0;filter:drop-shadow(0 0 20px rgba(255,204,0,0.8));">⚡ 💥 🚨</div>
+                  <div style="font-size:13px;color:#d0d7e5;font-weight:600;">840,000 files transmitted to prosecutors</div>
                 </div>
               </div>
-            </div>
 
-            <!-- PANEL 7: Cliffhanger -->
-            <div class="webtoon-panel" data-delay="720" style="opacity:0;transform:translateY(20px);transition:all .5s ease;position:relative;background:linear-gradient(180deg,#0d0015,#050008);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;">
-              <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,61,110,0.1),transparent 70%);"></div>
-              <div style="position:relative;z-index:1;text-align:center;padding:28px 20px;">
-                <div style="font-size:10px;letter-spacing:.3em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:14px;">— To Be Continued —</div>
-                <div style="font-size:26px;font-weight:900;color:white;text-shadow:0 0 24px rgba(199,119,255,0.5);">Episode 02 ↓</div>
-                <div style="margin-top:10px;font-size:11px;color:rgba(199,119,255,0.55);">Auto-generated by AI in 18 seconds</div>
+              <!-- Scene 6: Cliffhanger Ending -->
+              <div id="wt-scene-6" class="wt-scene" style="position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:linear-gradient(180deg,#0e0018,#000); transition:opacity .5s ease;">
+                <div style="font-size:11px;letter-spacing:.3em;color:#ff8fab;text-transform:uppercase;margin-bottom:10px;">— CLIMAX REACHED —</div>
+                <div style="font-size:28px;font-weight:900;color:white;text-shadow:0 0 30px rgba(199,119,255,0.7);">Episode 02 Coming Next</div>
+                <div style="margin-top:14px;display:flex;gap:8px;">
+                  <span style="background:rgba(10,255,178,0.15);color:#0affb2;border:1px solid rgba(10,255,178,0.3);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;">✓ 1080p Full HD</span>
+                  <span style="background:rgba(199,119,255,0.15);color:#c77dff;border:1px solid rgba(199,119,255,0.3);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;">🎤 6 Character Voices</span>
+                </div>
+              </div>
+
+              <!-- Overlay Play Button -->
+              <div id="wt-play-overlay" style="position:absolute; z-index:10; width:72px; height:72px; border-radius:50%; background:rgba(199,119,255,0.9); display:flex; align-items:center; justify-content:center; box-shadow:0 0 36px rgba(199,119,255,0.6); transition:transform .2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                <span style="font-size:28px; color:#111; margin-left:4px;">▶</span>
               </div>
             </div>
 
+            <!-- Video Progress bar -->
+            <div style="height:3px; background:rgba(255,255,255,0.08);">
+              <div id="wt-progress-bar" style="height:3px; background:linear-gradient(90deg,#c77dff,#ff3d6e); width:0%; transition:width .3s linear;"></div>
+            </div>
+
+            <!-- Player controls toolbar -->
+            <div style="padding:12px 18px; display:flex; align-items:center; gap:12px; background:#0c0b14;">
+              <button id="wt-play-btn" onclick="toggleWebtoonVideo()" style="background:linear-gradient(135deg,#c77dff,#ff3d6e);border:none;color:white;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;">
+                <span>▶ Play Scene</span>
+              </button>
+              <span id="wt-time-display" style="font-size:12px; color:var(--muted); font-family:monospace;">0:00 / 0:30</span>
+              
+              <!-- Mini Audio Waveform -->
+              <div id="wt-audio-wave" style="display:flex; align-items:flex-end; gap:2px; height:18px; margin-left:auto;">
+                <div style="width:2px;height:4px;background:#c77dff;border-radius:1px;"></div>
+                <div style="width:2px;height:8px;background:#c77dff;border-radius:1px;"></div>
+                <div style="width:2px;height:14px;background:#c77dff;border-radius:1px;"></div>
+                <div style="width:2px;height:6px;background:#c77dff;border-radius:1px;"></div>
+                <div style="width:2px;height:12px;background:#c77dff;border-radius:1px;"></div>
+                <div style="width:2px;height:7px;background:#c77dff;border-radius:1px;"></div>
+              </div>
+              <span style="font-size:11px; color:#c77dff; font-weight:700;">🎭 ElevenLabs V2</span>
+            </div>
+          </div>
+
+          <!-- VIEW 2: COMIC PANEL STRIP READER -->
+          <div id="webtoon-panels-view" style="display:none; max-height:580px; overflow-y:auto;">
+            
+            <!-- PANEL 1 -->
+            <div style="position:relative;background:linear-gradient(180deg,#0d0015,#1a0030,#0d0015);padding:36px 20px;text-align:center;border-bottom:2px solid rgba(199,119,255,0.2);">
+              <div style="font-size:10px;letter-spacing:.25em;color:#c77dff;text-transform:uppercase;font-weight:800;margin-bottom:8px;">EPISODE 01 · PROLOGUE</div>
+              <div style="font-size:32px;font-weight:900;color:white;text-shadow:0 0 30px rgba(199,119,255,0.7);">He Risked<br><span style="background:linear-gradient(90deg,#ff3d6e,#c77dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Everything</span></div>
+            </div>
+
+            <!-- PANEL 2 -->
+            <div style="position:relative;background:linear-gradient(180deg,#060e1a,#0c1a2e);min-height:220px;overflow:hidden;border-bottom:2px solid rgba(255,255,255,0.06);display:flex;align-items:flex-end;padding:16px;">
+              <div style="position:absolute;top:16px;right:30px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.9),transparent 70%);"></div>
+              <div style="width:100%;text-align:center;background:rgba(0,0,0,0.6);border-radius:8px;padding:8px 12px;">
+                <span style="font-size:12px;color:#00d2ff;font-style:italic;">Seoul, South Korea · 3:47 AM</span>
+              </div>
+            </div>
+
+            <!-- PANEL 3 -->
+            <div style="position:relative;background:linear-gradient(135deg,#150008,#250015);min-height:220px;padding:24px;border-bottom:2px solid rgba(255,61,110,0.2);display:flex;flex-direction:column;justify-content:space-between;">
+              <div style="background:white;border-radius:12px 12px 12px 2px;padding:12px 16px;max-width:70%;">
+                <div style="font-size:13px;font-weight:800;color:#111;">"They told me to stay silent."</div>
+              </div>
+              <div style="align-self:flex-end;background:rgba(255,61,110,0.15);border:1px solid rgba(255,61,110,0.4);border-radius:12px 2px 12px 12px;padding:10px 14px;max-width:60%;">
+                <div style="font-size:11.5px;color:#ff8fab;font-style:italic;">"But I had the documents."</div>
+              </div>
+            </div>
+
+            <!-- PANEL 4 -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;min-height:180px;border-bottom:2px solid rgba(255,255,255,0.06);">
+              <div style="background:linear-gradient(135deg,#001520,#003050);padding:16px;display:flex;align-items:flex-end;border-right:2px solid #08060c;">
+                <div style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.4);border-radius:8px;padding:8px 10px;font-size:11px;color:#00d2ff;font-weight:700;">"You don't know who you're dealing with."</div>
+              </div>
+              <div style="background:linear-gradient(135deg,#200010,#400020);padding:16px;display:flex;align-items:flex-end;">
+                <div style="background:white;border-radius:8px;padding:8px 10px;font-size:11px;color:#111;font-weight:800;">"I know exactly who you are."</div>
+              </div>
+            </div>
+
+            <!-- PANEL 5 -->
+            <div style="background:linear-gradient(180deg,#0a0510,#050008);padding:32px 20px;text-align:center;">
+              <div style="font-size:16px;font-weight:900;color:#ffcc00;letter-spacing:.15em;">⚡ THE TRUTH IS REVEALED ⚡</div>
+              <div style="margin-top:10px;font-size:12px;color:rgba(199,119,255,0.6);">— Episode 02 Coming Next —</div>
+            </div>
           </div>
         </div>
 
@@ -1851,28 +1922,6 @@
               <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;">
                 <div style="width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#001a3d,#00d2ff);flex-shrink:0;"></div>
                 <div><div style="font-size:12px;font-weight:700;">Cyber Thriller</div><div style="font-size:10px;color:var(--muted);">Cyan + neon tech</div></div>
-              </div>
-            </div>
-          </div>
-
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;">
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;">📊 Stats</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <div style="text-align:center;padding:10px;background:rgba(199,119,255,0.06);border-radius:10px;border:1px solid rgba(199,119,255,0.15);">
-                <div style="font-size:20px;font-weight:800;color:#c77dff;">6-12</div>
-                <div style="font-size:10px;color:var(--muted);">Panels/Episode</div>
-              </div>
-              <div style="text-align:center;padding:10px;background:rgba(255,61,110,0.06);border-radius:10px;border:1px solid rgba(255,61,110,0.15);">
-                <div style="font-size:20px;font-weight:800;color:#ff8fab;">18s</div>
-                <div style="font-size:10px;color:var(--muted);">Gen Time</div>
-              </div>
-              <div style="text-align:center;padding:10px;background:rgba(0,210,255,0.06);border-radius:10px;border:1px solid rgba(0,210,255,0.15);">
-                <div style="font-size:20px;font-weight:800;color:#00d2ff;">4K</div>
-                <div style="font-size:10px;color:var(--muted);">Resolution</div>
-              </div>
-              <div style="text-align:center;padding:10px;background:rgba(10,255,178,0.06);border-radius:10px;border:1px solid rgba(10,255,178,0.15);">
-                <div style="font-size:20px;font-weight:800;color:#0affb2;">∞</div>
-                <div style="font-size:10px;color:var(--muted);">Episodes</div>
               </div>
             </div>
           </div>
@@ -2728,21 +2777,94 @@
     document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
 
     // ===== WEBTOON PANEL SCROLL ANIMATION =====
-    function initWebtoonPanels() {
-      const panels = document.querySelectorAll('.webtoon-panel');
-      const panelObserver = new IntersectionObserver(entries => {
-        entries.forEach((e, i) => {
-          if (e.isIntersecting) {
-            setTimeout(() => {
-              e.target.style.opacity = '1';
-              e.target.style.transform = 'translateY(0)';
-            }, parseInt(e.target.dataset.delay || 0));
-            panelObserver.unobserve(e.target);
-          }
-        });
-      }, { threshold: 0.15 });
-      panels.forEach(p => panelObserver.observe(p));
+    // ===== WEBTOON VIDEO PLAYER ENGINE =====
+    let wtPlaying = false;
+    let wtCurrentScene = 1;
+    let wtTimer = null;
+    let wtProgress = 0;
+    const WT_TOTAL_DURATION = 30; // 30 seconds total scene demo
+
+    function switchWebtoonTab(tab) {
+      const videoView = document.getElementById('webtoon-video-view');
+      const panelsView = document.getElementById('webtoon-panels-view');
+      const btnVideo = document.getElementById('webtoon-tab-video');
+      const btnPanels = document.getElementById('webtoon-tab-panels');
+
+      if (tab === 'video') {
+        videoView.style.display = 'block';
+        panelsView.style.display = 'none';
+        btnVideo.style.background = 'linear-gradient(135deg,#c77dff,#ff3d6e)';
+        btnVideo.style.color = 'white';
+        btnPanels.style.background = 'transparent';
+        btnPanels.style.color = 'var(--muted)';
+      } else {
+        videoView.style.display = 'none';
+        panelsView.style.display = 'block';
+        btnPanels.style.background = 'linear-gradient(135deg,#c77dff,#ff3d6e)';
+        btnPanels.style.color = 'white';
+        btnVideo.style.background = 'transparent';
+        btnVideo.style.color = 'var(--muted)';
+      }
     }
+
+    function showWebtoonScene(num) {
+      wtCurrentScene = num;
+      for (let i = 1; i <= 6; i++) {
+        const sc = document.getElementById(`wt-scene-${i}`);
+        if (sc) {
+          sc.style.display = (i === num) ? ((i === 4) ? 'grid' : 'flex') : 'none';
+        }
+      }
+      const ind = document.getElementById('webtoon-scene-indicator');
+      if (ind) ind.textContent = `Scene ${num}/6`;
+    }
+
+    function toggleWebtoonVideo() {
+      const btn = document.getElementById('wt-play-btn');
+      const overlay = document.getElementById('wt-play-overlay');
+
+      if (wtPlaying) {
+        // Pause
+        wtPlaying = false;
+        clearInterval(wtTimer);
+        if (btn) btn.innerHTML = '<span>▶ Play Scene</span>';
+        if (overlay) overlay.style.display = 'flex';
+        return;
+      }
+
+      // Play
+      wtPlaying = true;
+      if (btn) btn.innerHTML = '<span>⏸ Pause</span>';
+      if (overlay) overlay.style.display = 'none';
+
+      wtTimer = setInterval(() => {
+        wtProgress += 1;
+        const pct = Math.min((wtProgress / WT_TOTAL_DURATION) * 100, 100);
+        const pb = document.getElementById('wt-progress-bar');
+        const td = document.getElementById('wt-time-display');
+
+        if (pb) pb.style.width = pct + '%';
+        if (td) {
+          const secs = wtProgress % 60;
+          td.textContent = `0:${String(secs).padStart(2,'0')} / 0:30`;
+        }
+
+        // Advance scenes every 5 seconds
+        const targetScene = Math.min(Math.floor(wtProgress / 5) + 1, 6);
+        if (targetScene !== wtCurrentScene) {
+          showWebtoonScene(targetScene);
+        }
+
+        if (wtProgress >= WT_TOTAL_DURATION) {
+          clearInterval(wtTimer);
+          wtPlaying = false;
+          wtProgress = 0;
+          if (btn) btn.innerHTML = '<span>↺ Replay</span>';
+          if (overlay) overlay.style.display = 'flex';
+        }
+      }, 1000);
+    }
+
     // ===== SANDBOX PITCH GENERATOR =====
     const SANDBOX_DATA = {
       "The Secret Nuclear Decision of 1983": {
