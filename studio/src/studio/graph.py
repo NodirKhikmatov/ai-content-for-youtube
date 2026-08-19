@@ -109,20 +109,24 @@ LINEAR_EDGES: list[tuple[str, str]] = [
     ("video_generation", "video_assembly"),
     ("video_assembly", "subtitle"),
     ("subtitle", "quality_review"),
-    ("compliance", "publishing"),
 ]
 
 
-def _route_from_start(state: PipelineState) -> str:
+def _route_from_start(state: PipelineState) -> str | list[str]:
     """Fresh run (no video_id yet) starts at case_sourcing as always.
     A resumed run (state pre-populated from the DB — see
     scripts/run_pipeline.py) enters at the first stage that hasn't
     succeeded yet, reusing whatever the DB already has instead of
-    re-running it."""
+    re-running it.
+
+    script_writer's normal completion fans out to both voice_synthesis and
+    video_generation (LINEAR_EDGES above) — routing past script_writer on
+    resume has to fan out to both too, or video_generation silently never
+    runs and video_assembly fails downstream with no clip paths in state."""
     if state.get("video_id") is None:
         return "case_sourcing"
     if state.get("script") is not None:
-        return "voice_synthesis"
+        return ["voice_synthesis", "video_generation"]
     if state.get("beat_sheet") is not None:
         return "script_writer"
     if state.get("fact_check") is not None:
@@ -204,6 +208,7 @@ def build_graph() -> StateGraph:
             "originality": "originality",
             "script_writer": "script_writer",
             "voice_synthesis": "voice_synthesis",
+            "video_generation": "video_generation",
         },
     )
 

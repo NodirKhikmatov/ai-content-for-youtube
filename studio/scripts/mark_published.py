@@ -4,27 +4,16 @@ Data API write path isn't automated until Phase 2).
 
 agents/publishing.py never sets status="published" itself, on purpose:
 that would claim an upload happened when it hasn't. This script is the
-real confirmation step, run by hand once it has.
+real confirmation step, run by hand once it has — same logic as
+web/app.py's "Mark Published" form, shared via studio.publish.
 
 Usage:
     python scripts/mark_published.py <video_id> <youtube_url_or_id>
 """
 
 import sys
-from datetime import UTC, datetime
 
-from studio import db
-
-
-def mark_published(video_id: str, youtube_ref: str) -> str:
-    youtube_video_id = youtube_ref.rsplit("/", 1)[-1].split("=")[-1]
-    db.update_video(
-        video_id,
-        status="published",
-        youtube_video_id=youtube_video_id,
-        published_at=datetime.now(UTC),
-    )
-    return youtube_video_id
+from studio.publish import mark_published
 
 
 def main() -> None:

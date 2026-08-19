@@ -38,5 +38,8 @@ class PipelineState(TypedDict, total=False):
     youtube_video_id: str
     published: bool
 
+    # custom input / topic
+    custom_topic: dict[str, Any]
+
     # bookkeeping
     errors: list[str]

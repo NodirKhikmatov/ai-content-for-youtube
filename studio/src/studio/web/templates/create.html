@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Create Custom Video — The Turning Point{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+  <div>
+    <h1>Create Custom Video</h1>
+    <div class="muted">Generate an AI documentary on any topic, case, or event.</div>
+  </div>
+  <a class="btn secondary" href="/settings">⚙️ Configure API Keys</a>
+</div>
+
+<div class="card">
+  <form action="/runs/custom" method="post">
+    <div class="form-group">
+      <label class="form-label" for="title">Video Title / Main Topic *</label>
+      <input type="text" id="title" name="title" required placeholder="e.g. The Untold Story of Steve Jobs and NeXT Computer, or The Dreyfus Affair" style="width:100%;">
+      <div class="form-hint">The core subject of the documentary. The research agent will deeply investigate this topic.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="niche">Niche / Genre</label>
+        <input type="text" id="niche" name="niche" value="Tech & History" placeholder="e.g. True Crime, Tech History, Science, Business Scandals">
+        <div class="form-hint">Channel topic niche or jurisdiction.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="era">Era / Timeframe</label>
+        <input type="text" id="era" name="era" value="Modern" placeholder="e.g. 1985-1997, 19th Century, 2008 Financial Crisis">
+        <div class="form-hint">Helps research and visual generation match chronological context.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="turning_point">Key Turning Point / Climax (Optional)</label>
+      <textarea id="turning_point" name="turning_point" placeholder="e.g. The secret demo of the NeXTSTEP OS that persuaded Apple to acquire NeXT in 1996 and bring Steve Jobs back."></textarea>
+      <div class="form-hint">The pivotal evidence, decision, or moment that changed everything. If left blank, AI research will identify it automatically.</div>
+    </div>
+
+    <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+      <a class="btn secondary" href="/">Cancel</a>
+      <button class="btn" type="submit">🚀 Start Video Generation</button>
+    </div>
+  </form>
+</div>
+
+<h2>💡 Popular Examples & Ideas</h2>
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px;">
+  <div class="card" style="cursor:pointer;" onclick="fillExample('The Rise and Fall of Enron', 'Business & Fraud', '2001', 'Sherron Watkins writes the internal whistleblower memo exposing mark-to-market accounting fraud.')">
+    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">📉 The Rise and Fall of Enron</div>
+    <div class="muted" style="font-size:13px;">Business & Fraud • 2001</div>
+  </div>
+  <div class="card" style="cursor:pointer;" onclick="fillExample('Apollo 11: 1202 Program Alarm', 'Space & Science', '1969', 'Margaret Hamilton software and Jack Garman radar check prevents fatal landing abort.')">
+    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">🚀 Apollo 11: 1202 Alarm</div>
+    <div class="muted" style="font-size:13px;">Space & Science • 1969</div>
+  </div>
+  <div class="card" style="cursor:pointer;" onclick="fillExample('The Miracle of Bletchley Park', 'WWII & Cryptography', '1940-1945', 'Alan Turing and Gordon Welchman construct the Bombe machine cracking Enigma.')">
+    <div style="font-weight:700; font-size:15px; margin-bottom:4px;">🔐 The Miracle of Bletchley Park</div>
+    <div class="muted" style="font-size:13px;">WWII & Cryptography • 1940s</div>
+  </div>
+</div>
+
+<script>
+function fillExample(title, niche, era, tp) {
+  document.getElementById('title').value = title;
+  document.getElementById('niche').value = niche;
+  document.getElementById('era').value = era;
+  document.getElementById('turning_point').value = tp;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+{% endblock %}

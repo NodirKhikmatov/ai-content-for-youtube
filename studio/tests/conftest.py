@@ -10,6 +10,28 @@ from pathlib import Path
 
 import pytest
 
+from studio.config import settings
+
+
+@pytest.fixture(autouse=True)
+def _real_backends_by_default(monkeypatch):
+    """Every *_BACKEND setting defaults to the real (paid) vendor, and every
+    test that exercises voice/video/transcribe/quality-review mocks that
+    real vendor's class/function directly (ElevenLabsBackend, KlingBackend,
+    transcribe, review_video) — not settings.*_backend. A developer's local
+    .env can set e.g. VIDEO_GEN_BACKEND=fake to run the actual pipeline for
+    free (see tools/video_gen.py's FakeVideoBackend and friends); Settings
+    reads .env unconditionally, so without this, that same override would
+    silently swap in the *fake* backend during tests too, bypassing the
+    test's mock entirely and testing the wrong code path. Pinning these
+    back to their real defaults for every test keeps the suite's behavior
+    independent of whatever's in the developer's .env.
+    """
+    monkeypatch.setattr(settings, "video_gen_backend", "kling")
+    monkeypatch.setattr(settings, "voice_backend", "elevenlabs")
+    monkeypatch.setattr(settings, "transcribe_backend", "deepgram")
+    monkeypatch.setattr(settings, "quality_review_backend", "gemini")
+
 
 def _make_synthetic_clip(path: Path, duration: float) -> None:
     subprocess.run(

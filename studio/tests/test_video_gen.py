@@ -31,3 +31,11 @@ def test_backend_requires_both_credentials(monkeypatch):
 
     with pytest.raises(RuntimeError, match="KLING_ACCESS_KEY"):
         video_gen.KlingBackend()
+
+
+def test_higgsfield_backend_requires_both_credentials(monkeypatch):
+    monkeypatch.setattr(video_gen.settings, "higgsfield_key_id", None)
+    monkeypatch.setattr(video_gen.settings, "higgsfield_key_secret", "secret-only")
+
+    with pytest.raises(RuntimeError, match="HIGGSFIELD_KEY_ID"):
+        video_gen.HiggsfieldBackend()

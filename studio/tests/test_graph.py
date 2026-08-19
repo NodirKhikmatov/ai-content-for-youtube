@@ -51,9 +51,13 @@ def test_resume_with_beat_sheet_skips_to_script_writer():
     assert _route_from_start(state) == "script_writer"
 
 
-def test_resume_with_script_skips_to_voice_synthesis():
+def test_resume_with_script_fans_out_to_voice_and_video():
+    # script_writer's normal completion fans out to both voice_synthesis
+    # and video_generation (LINEAR_EDGES) — resuming past it must fan out
+    # the same way, or video_generation never runs and video_assembly fails
+    # downstream with no clip paths in state.
     state = {"video_id": "x", "beat_sheet": {}, "script": "narration text"}
-    assert _route_from_start(state) == "voice_synthesis"
+    assert _route_from_start(state) == ["voice_synthesis", "video_generation"]
 
 
 def test_routes_to_originality_when_fact_check_passes():

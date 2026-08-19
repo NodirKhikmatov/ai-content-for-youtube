@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Backlog — The Turning Point{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+  <div>
+    <h1>Case Backlog ({{ cases|length }} candidates)</h1>
+    <div class="muted">Pre-researched cases scored for drama, public record depth, and policy compliance.</div>
+  </div>
+  <a class="btn" href="/create">✨ Create Custom Topic</a>
+</div>
+
+{% if cases %}
+<div class="card">
+  <table>
+    <tr><th>Score</th><th>Title</th><th>Niche / Jurisdiction</th><th>Era</th><th>Action</th></tr>
+    {% for c in cases %}
+    <tr>
+      <td><span class="badge ok">{{ c.score }}</span></td>
+      <td style="font-weight:600;">{{ c.title }}</td>
+      <td class="muted">{{ c.jurisdiction }}</td>
+      <td class="muted">{{ c.era }}</td>
+      <td>
+        <form class="inline" action="/runs/case/{{ c.id }}" method="post">
+          <button class="btn secondary" style="padding:4px 10px; font-size:12px;" type="submit">Generate Video 🚀</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="card empty">Backlog is empty — click "Create Custom Topic" above to add your own topic!</div>
+{% endif %}
+{% endblock %}

@@ -13,6 +13,9 @@ returns `Iterator[bytes]`.
 """
 
 import logging
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Protocol
 
 from elevenlabs.client import ElevenLabs
@@ -51,6 +54,42 @@ class ElevenLabsBackend:
             voice_id, text=text, model_id=MODEL_ID, output_format="mp3_44100_128"
         )
         return b"".join(chunks)
+
+
+class FakeTTSBackend:
+    """Local, zero-cost stand-in for ElevenLabsBackend: same TTSBackend
+    interface, but synthesizes narration with macOS's built-in `say`
+    command instead of calling ElevenLabs — no API key, no network call,
+    no bill, no per-voice API permissions to hit. voice_id is accepted but
+    unused (say's voice selection is a system voice name, not an
+    ElevenLabs voice ID, so there's nothing meaningful to rotate through
+    here). Not a substitute for ElevenLabs' voice quality — see
+    VOICE_BACKEND in .env.example.
+    """
+
+    def synthesize(self, text: str, voice_id: str) -> bytes:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            aiff_path = Path(tmp_dir) / "voice.aiff"
+            mp3_path = Path(tmp_dir) / "voice.mp3"
+
+            say_result = subprocess.run(
+                ["say", "-o", str(aiff_path), text],
+                capture_output=True,
+                text=True,
+            )
+            if say_result.returncode != 0:
+                raise RuntimeError(f"macOS 'say' failed: {say_result.stderr[-2000:]}")
+
+            ffmpeg_result = subprocess.run(
+                [settings.ffmpeg_binary, "-y", "-i", str(aiff_path), "-c:a", "libmp3lame", str(mp3_path)],
+                capture_output=True,
+                text=True,
+            )
+            if ffmpeg_result.returncode != 0:
+                raise RuntimeError(
+                    f"ffmpeg failed converting fake voice to mp3: {ffmpeg_result.stderr[-2000:]}"
+                )
+            return mp3_path.read_bytes()
 
 
 def voice_for_video(video_id: str) -> str:

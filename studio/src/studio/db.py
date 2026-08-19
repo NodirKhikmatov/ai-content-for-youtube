@@ -114,6 +114,34 @@ def get_top_candidate_case(channel_id: Id) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+def list_backlog(channel_id: Id, limit: int = 50) -> list[dict[str, Any]]:
+    """Unselected candidates, highest-scored first — same ordering
+    get_top_candidate_case uses, just not limited to one row. Powers
+    web/app.py's backlog view."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            select id, title, jurisdiction, era, turning_point, score
+            from cases
+            where channel_id = %s and status = 'candidate'
+            order by score desc
+            limit %s
+            """,
+            (channel_id, limit),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def count_backlog(channel_id: Id) -> int:
+    with get_connection() as conn:
+        row = conn.execute(
+            "select count(*) as n from cases where channel_id = %s and status = 'candidate'",
+            (channel_id,),
+        ).fetchone()
+    assert row is not None, "count(*) always returns exactly one row"
+    return row["n"]
+
+
 def mark_case_selected(case_id: Id) -> None:
     with get_connection() as conn:
         conn.execute("update cases set status = 'selected' where id = %s", (case_id,))
@@ -150,6 +178,24 @@ def get_video(video_id: Id) -> dict[str, Any]:
     if row is None:
         raise RuntimeError(f"No video with id {video_id}")
     return dict(row)
+
+
+def list_videos(limit: int = 50) -> list[dict[str, Any]]:
+    """Most recently created videos first, with the case title joined in —
+    powers web/app.py's dashboard and library views."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            select v.id, v.title, v.status, v.created_at, v.updated_at,
+                   v.assembled_video_path, v.youtube_video_id, c.title as case_title
+            from videos v
+            left join cases c on c.id = v.case_id
+            order by v.created_at desc
+            limit %s
+            """,
+            (limit,),
+        ).fetchall()
+    return [dict(r) for r in rows]
 
 
 def get_agent_runs(video_id: Id) -> list[dict[str, Any]]:

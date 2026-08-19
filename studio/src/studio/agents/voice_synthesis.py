@@ -24,12 +24,19 @@ import logging
 from pathlib import Path
 
 from studio import db, storage
+from studio.config import settings
 from studio.state import PipelineState
-from studio.tools.voice import ElevenLabsBackend, voice_for_video
+from studio.tools.voice import ElevenLabsBackend, FakeTTSBackend, voice_for_video
 
 log = logging.getLogger(__name__)
 
 MEDIA_DIR = Path("media")
+
+
+def _make_backend():
+    if settings.voice_backend == "fake":
+        return FakeTTSBackend()
+    return ElevenLabsBackend()
 
 
 def run(state: PipelineState) -> PipelineState:
@@ -43,7 +50,7 @@ def run(state: PipelineState) -> PipelineState:
     local_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
-        backend = ElevenLabsBackend()
+        backend = _make_backend()
         audio_bytes = backend.synthesize(script, voice_id)
         local_path.write_bytes(audio_bytes)
     except Exception as exc:
@@ -64,5 +71,6 @@ def run(state: PipelineState) -> PipelineState:
 
     log.info("voice_synthesis: %s (voice=%s, r2=%s)", local_path, voice_id, uploaded)
 
-    state["voice_audio_path"] = str(local_path)
-    return state
+    # Return only this node's new key, not the whole accumulated state —
+    # see video_generation.py's run() for why (same fan-out/join pair).
+    return {"voice_audio_path": str(local_path)}

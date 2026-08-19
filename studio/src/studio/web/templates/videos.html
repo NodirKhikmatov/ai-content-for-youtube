@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Videos — The Turning Point{% endblock %}
+{% block content %}
+<h1>Videos ({{ videos|length }})</h1>
+{% if videos %}
+<div class="card">
+  <table>
+    <tr><th>Case</th><th>Status</th><th>Created</th><th></th></tr>
+    {% for v in videos %}
+    <tr>
+      <td>{{ v.case_title or v.title or "—" }}</td>
+      <td><span class="badge {{ v.status }}">{{ v.status }}</span></td>
+      <td class="muted">{{ v.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td><a class="btn secondary" href="/videos/{{ v.id }}">Open</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="empty">No videos yet — start a run from the dashboard.</div>
+{% endif %}
+{% endblock %}

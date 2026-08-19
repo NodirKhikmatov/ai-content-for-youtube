@@ -19,13 +19,22 @@ import logging
 from pathlib import Path
 
 from studio import db, storage
+from studio.config import settings
 from studio.state import PipelineState
-from studio.tools.video_gen import KlingBackend
+from studio.tools.video_gen import FakeVideoBackend, HiggsfieldBackend, KlingBackend
 
 log = logging.getLogger(__name__)
 
 MEDIA_DIR = Path("media")
 CLIP_DURATION_SECONDS = 5
+
+
+def _make_backend():
+    if settings.video_gen_backend == "fake":
+        return FakeVideoBackend()
+    if settings.video_gen_backend == "higgsfield":
+        return HiggsfieldBackend()
+    return KlingBackend()
 
 
 def _best_effort_upload(local_path: Path, r2_key: str) -> bool:
@@ -50,7 +59,7 @@ def run(state: PipelineState) -> PipelineState:
 
     clip_paths: list[str] = []
     try:
-        backend = KlingBackend()
+        backend = _make_backend()
         for i, beat in enumerate(beat_sheet["beats"]):
             clip_bytes = backend.generate_clip(beat["content"], CLIP_DURATION_SECONDS)
             local_path = clip_dir / f"{i:02d}_{beat['name']}.mp4"
@@ -76,5 +85,11 @@ def run(state: PipelineState) -> PipelineState:
 
     log.info("video_generation: %d clips (%d uploaded to R2)", len(clip_paths), uploaded)
 
-    state["video_clip_paths"] = clip_paths
-    return state
+    # Return only this node's new key, not the whole accumulated state:
+    # this runs concurrently with voice_synthesis (both fork off
+    # script_writer, both join into video_assembly), and if both nodes
+    # returned every key they'd merely passed through unchanged (case_id,
+    # script, ...), LangGraph would see two writes to the same channel in
+    # the same step and raise InvalidUpdateError, even though the values
+    # are identical.
+    return {"video_clip_paths": clip_paths}

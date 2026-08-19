@@ -20,9 +20,10 @@ from pathlib import Path
 from typing import Any
 
 from studio import db, storage
+from studio.config import settings
 from studio.state import PipelineState
 from studio.tools.ffmpeg_utils import burn_subtitles, extract_audio
-from studio.tools.transcribe import Word, transcribe
+from studio.tools.transcribe import Word, fake_transcribe, transcribe
 
 log = logging.getLogger(__name__)
 
@@ -111,7 +112,10 @@ def run(state: PipelineState) -> PipelineState:
 
     try:
         extract_audio(Path(assembled_video_path), extracted_audio_path)
-        result = transcribe(extracted_audio_path.read_bytes())
+        if settings.transcribe_backend == "fake":
+            result = fake_transcribe(extracted_audio_path, script)
+        else:
+            result = transcribe(extracted_audio_path.read_bytes())
         wer = word_error_rate(script, result["transcript"])
         srt_path.write_text(words_to_srt(result["words"]))
     except Exception as exc:

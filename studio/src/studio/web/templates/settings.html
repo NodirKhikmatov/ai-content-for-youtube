@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Settings & API Keys — The Turning Point{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+  <div>
+    <h1>Settings & API Configuration</h1>
+    <div class="muted">Set your API keys and select generation backends. You can switch to zero-cost <code>fake</code> backends for testing anytime.</div>
+  </div>
+  <a class="btn" href="/create">✨ Create Video</a>
+</div>
+
+{% if saved %}
+<div class="alert-box success">
+  ✅ Settings successfully updated and saved to <code>.env</code>!
+</div>
+{% endif %}
+
+<form action="/settings" method="post">
+  <div class="card">
+    <h2 style="margin-top:0; color:#818cf8;">🤖 LLM & Brain Models</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="anthropic_api_key">Anthropic Claude API Key</label>
+        <input type="password" id="anthropic_api_key" name="anthropic_api_key" value="{{ settings.anthropic_api_key or '' }}" placeholder="sk-ant-...">
+        <div class="form-hint">Used for Deep Research, Fact Checking, Storytelling, and Scriptwriting.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="gemini_api_key">Google Gemini API Key</label>
+        <input type="password" id="gemini_api_key" name="gemini_api_key" value="{{ settings.gemini_api_key or '' }}" placeholder="AIzaSy...">
+        <div class="form-hint">Used for Quality Review video evaluation and fallback LLM.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="openai_api_key">OpenAI API Key (Optional)</label>
+      <input type="password" id="openai_api_key" name="openai_api_key" value="{{ settings.openai_api_key or '' }}" placeholder="sk-proj-...">
+      <div class="form-hint">Alternative LLM provider.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0; color:#34d399;">🎙 Voice & Video Backends</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="voice_backend">Voice Synthesis Backend</label>
+        <select id="voice_backend" name="voice_backend">
+          <option value="elevenlabs" {% if settings.voice_backend == 'elevenlabs' %}selected{% endif %}>ElevenLabs (Realistic AI Voice - Paid)</option>
+          <option value="fake" {% if settings.voice_backend == 'fake' %}selected{% endif %}>Fake / Local Mac Say + FFmpeg (Free)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="elevenlabs_api_key">ElevenLabs API Key</label>
+        <input type="password" id="elevenlabs_api_key" name="elevenlabs_api_key" value="{{ settings.elevenlabs_api_key or '' }}" placeholder="sk_...">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="video_gen_backend">Video Generation Backend</label>
+        <select id="video_gen_backend" name="video_gen_backend">
+          <option value="kling" {% if settings.video_gen_backend == 'kling' %}selected{% endif %}>Kling AI (Direct API)</option>
+          <option value="higgsfield" {% if settings.video_gen_backend == 'higgsfield' %}selected{% endif %}>Higgsfield AI (Multi-model: Seedance, Kling, etc.)</option>
+          <option value="fake" {% if settings.video_gen_backend == 'fake' %}selected{% endif %}>Fake / Local Synthetic FFmpeg Clips (Free)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="higgsfield_model">Higgsfield Model</label>
+        <input type="text" id="higgsfield_model" name="higgsfield_model" value="{{ settings.higgsfield_model or 'seedance-2.0' }}" placeholder="seedance-2.0">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="kling_access_key">Kling Access Key</label>
+        <input type="password" id="kling_access_key" name="kling_access_key" value="{{ settings.kling_access_key or '' }}" placeholder="Kling Access Key">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="kling_secret_key">Kling Secret Key</label>
+        <input type="password" id="kling_secret_key" name="kling_secret_key" value="{{ settings.kling_secret_key or '' }}" placeholder="Kling Secret Key">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="higgsfield_key_id">Higgsfield Key ID</label>
+        <input type="password" id="higgsfield_key_id" name="higgsfield_key_id" value="{{ settings.higgsfield_key_id or '' }}" placeholder="Higgsfield Key ID">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="higgsfield_key_secret">Higgsfield Key Secret</label>
+        <input type="password" id="higgsfield_key_secret" name="higgsfield_key_secret" value="{{ settings.higgsfield_key_secret or '' }}" placeholder="Higgsfield Key Secret">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0; color:#fbbf24;">🔍 Subtitles, Research & Quality Review</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="transcribe_backend">Transcription / Subtitles Backend</label>
+        <select id="transcribe_backend" name="transcribe_backend">
+          <option value="deepgram" {% if settings.transcribe_backend == 'deepgram' %}selected{% endif %}>Deepgram (Accurate Word Timestamps - Paid)</option>
+          <option value="fake" {% if settings.transcribe_backend == 'fake' %}selected{% endif %}>Fake / Script Timestamp Estimation (Free)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="deepgram_api_key">Deepgram API Key</label>
+        <input type="password" id="deepgram_api_key" name="deepgram_api_key" value="{{ settings.deepgram_api_key or '' }}" placeholder="Deepgram API Token">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="quality_review_backend">Quality Review Backend</label>
+        <select id="quality_review_backend" name="quality_review_backend">
+          <option value="gemini" {% if settings.quality_review_backend == 'gemini' %}selected{% endif %}>Gemini 1.5/2.0 Flash Video Judge (Paid)</option>
+          <option value="fake" {% if settings.quality_review_backend == 'fake' %}selected{% endif %}>Fake / Automatic High-Score Pass (Free)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="tavily_api_key">Tavily Research API Key</label>
+        <input type="password" id="tavily_api_key" name="tavily_api_key" value="{{ settings.tavily_api_key or '' }}" placeholder="tvly-...">
+        <div class="form-hint">Used for live web search grounding and fact-checking.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="voyage_api_key">Voyage AI API Key (Embeddings & Angle Originality)</label>
+      <input type="password" id="voyage_api_key" name="voyage_api_key" value="{{ settings.voyage_api_key or '' }}" placeholder="pa-...">
+      <div class="form-hint">Checks new scripts against channel history to prevent duplicate concepts.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0; color:#38bdf8;">📱 Human-in-the-Loop & Telegram Alerts</h2>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label" for="telegram_bot_token">Telegram Bot Token (Optional)</label>
+        <input type="password" id="telegram_bot_token" name="telegram_bot_token" value="{{ settings.telegram_bot_token or '' }}" placeholder="123456:ABC-DEF...">
+        <div class="form-hint">Allows reviewing and approving videos directly from your smartphone.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="telegram_chat_id">Telegram Chat ID (Optional)</label>
+        <input type="text" id="telegram_chat_id" name="telegram_chat_id" value="{{ settings.telegram_chat_id or '' }}" placeholder="8232386173">
+        <div class="form-hint">Your personal Telegram ID or channel ID.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+    <a class="btn secondary" href="/">Cancel</a>
+    <button class="btn" type="submit">💾 Save Settings</button>
+  </div>
+</form>
+{% endblock %}

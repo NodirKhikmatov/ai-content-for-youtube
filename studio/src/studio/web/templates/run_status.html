@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Run {{ thread_id[:8] }} — The Turning Point{% endblock %}
+{% block head %}
+{% if handle and handle.status == "running" %}
+<meta http-equiv="refresh" content="3">
+{% endif %}
+{% endblock %}
+{% block content %}
+<h1>Run <code>{{ thread_id[:8] }}</code></h1>
+
+{% if handle is none %}
+<div class="empty">Unknown run (server may have restarted — runs don't survive a process restart).</div>
+
+{% else %}
+<div class="card">
+  <span class="badge {{ handle.status }}">{{ handle.status }}</span>
+  {% if handle.video_id %}
+  <span class="muted">video <a class="row-link" href="/videos/{{ handle.video_id }}">{{ handle.video_id }}</a></span>
+  {% endif %}
+  {% if handle.error %}
+  <div style="margin-top:10px; color: var(--bad);">{{ handle.error }}</div>
+  {% endif %}
+</div>
+
+{% if handle.status == "running" %}
+<div class="empty">Working — this page refreshes automatically every few seconds.</div>
+{% endif %}
+
+{% if handle.status == "paused" and handle.interrupt_payload %}
+<h2>Quality Review needs a decision</h2>
+<div class="card">
+  {% if review_media_rel %}
+  <video controls src="/media/{{ handle.video_id }}/{{ review_media_rel }}"></video>
+  {% endif %}
+  <table>
+    {% for dim, score in handle.interrupt_payload.scores.items() %}
+    <tr>
+      <td>{{ dim }}</td>
+      <td><span class="badge {{ 'ok' if score >= min_dimension_score else 'bad' }}">{{ "%.2f"|format(score) }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% if handle.interrupt_payload.issues %}
+  <div class="muted" style="margin-top:8px;">Issues flagged:</div>
+  <ul>
+    {% for issue in handle.interrupt_payload.issues %}<li>{{ issue }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <form action="/runs/{{ thread_id }}/decide" method="post" style="margin-top:14px;">
+    <textarea name="notes" placeholder="Notes (optional)"></textarea>
+    <div style="margin-top:10px; display:flex; gap:10px;">
+      <button class="btn" type="submit" name="decision" value="approve">Approve</button>
+      <button class="btn secondary" type="submit" name="decision" value="reject">Reject</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if handle.status == "finished" and handle.result %}
+<h2>Result</h2>
+<div class="card">
+  {% if handle.result.compliance_verdict %}
+  <div>Compliance: <span class="badge {{ 'ok' if handle.result.compliance_verdict.approved_for_publish else 'bad' }}">{{ "approved" if handle.result.compliance_verdict.approved_for_publish else "rejected" }}</span></div>
+  {% endif %}
+  <a class="btn" style="margin-top:12px;" href="/videos/{{ handle.video_id }}">View video</a>
+</div>
+{% endif %}
+
+{% if agent_runs %}
+<h2>Agent runs</h2>
+<div class="card">
+  <table>
+    <tr><th>Agent</th><th>Status</th><th>Started</th></tr>
+    {% for r in agent_runs %}
+    <tr>
+      <td>{{ r.agent_name }}</td>
+      <td><span class="badge {{ r.status }}">{{ r.status }}</span></td>
+      <td class="muted">{{ r.started_at.strftime("%H:%M:%S") }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

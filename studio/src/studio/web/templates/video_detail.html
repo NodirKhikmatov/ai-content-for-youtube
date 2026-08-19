@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title or video_id }} — The Turning Point{% endblock %}
+{% block head %}
+{% if short_handle and short_handle.status == "running" %}
+<meta http-equiv="refresh" content="4">
+{% endif %}
+{% endblock %}
+{% block content %}
+<h1>{{ video.title or "Untitled" }}</h1>
+<span class="badge {{ video.status }}">{{ video.status }}</span>
+<span class="muted" style="margin-left:8px;">created {{ video.created_at.strftime("%Y-%m-%d %H:%M") }}</span>
+
+{% if video.status in ("sourced", "researched") %}
+<div class="card" style="margin-top:16px;">
+  <div class="muted">This video hasn't reached Voice/Video Generation yet.</div>
+  <form action="/videos/{{ video_id }}/resume" method="post" style="margin-top:10px;">
+    <button class="btn" type="submit">Resume from here</button>
+  </form>
+</div>
+{% endif %}
+
+{% if assembled_media_rel %}
+<h2>Long-form cut</h2>
+<div class="card">
+  <video controls src="/media/{{ video_id }}/{{ assembled_media_rel }}"></video>
+</div>
+{% endif %}
+
+{% if quality_verdict %}
+<h2>Quality Review</h2>
+<div class="card">
+  <div>decision: <span class="badge {{ 'ok' if quality_verdict.decision in ('approve','auto_approved') else 'bad' }}">{{ quality_verdict.decision }}</span></div>
+  <table style="margin-top:8px;">
+    {% for dim, score in quality_verdict.scores.items() %}
+    <tr>
+      <td>{{ dim }}</td>
+      <td><span class="badge {{ 'ok' if score >= min_dimension_score else 'bad' }}">{{ "%.2f"|format(score) }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if compliance_verdict %}
+<h2>Compliance</h2>
+<div class="card">
+  <div>{{ "Approved for publish" if compliance_verdict.approved_for_publish else "Not approved" }}
+    <span class="badge {{ 'ok' if compliance_verdict.approved_for_publish else 'bad' }}">
+      {{ "approved" if compliance_verdict.approved_for_publish else "rejected" }}
+    </span>
+  </div>
+  <table style="margin-top:8px;">
+    {% for v in compliance_verdict.verdicts %}
+    <tr>
+      <td>{{ v.category }}</td>
+      <td><span class="badge {{ 'ok' if v.risk == 'low' else 'bad' }}">{{ v.risk }}</span></td>
+      <td class="muted" style="font-size:12px;">{{ v.rationale }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if video.status == "approved" and not video.youtube_video_id %}
+<h2>Publish</h2>
+<div class="card">
+  <div class="muted" style="margin-bottom:8px;">Upload manually via YouTube Studio, then record it here.</div>
+  <form action="/videos/{{ video_id }}/publish" method="post" style="display:flex; gap:10px;">
+    <input type="text" name="youtube_ref" placeholder="YouTube URL or video ID" required>
+    <button class="btn" type="submit">Mark Published</button>
+  </form>
+</div>
+{% endif %}
+{% if video.youtube_video_id %}
+<div class="empty">Published as <code>{{ video.youtube_video_id }}</code>{% if video.published_at %} on {{ video.published_at.strftime("%Y-%m-%d") }}{% endif %}.</div>
+{% endif %}
+
+<h2>Shorts</h2>
+<div class="card">
+  {% if short_handle and short_handle.status == "running" %}
+  <div class="empty">Generating short — this page refreshes automatically.</div>
+  {% elif short_handle and short_handle.status == "failed" %}
+  <div style="color: var(--bad);">{{ short_handle.error }}</div>
+  {% elif short_media_rel %}
+  <video class="vertical" controls src="/media/{{ video_id }}/{{ short_media_rel }}"></video>
+  {% else %}
+  <div class="empty">No short yet.</div>
+  {% endif %}
+
+  {% if can_make_short and not (short_handle and short_handle.status == "running") %}
+  <form action="/videos/{{ video_id }}/shorts" method="post" style="margin-top:10px;">
+    <button class="btn secondary" type="submit">{{ "Regenerate Short" if short_output else "Make Short" }}</button>
+  </form>
+  {% elif not can_make_short %}
+  <div class="muted" style="font-size:13px;">Needs Storytelling to have run first.</div>
+  {% endif %}
+</div>
+
+<h2>Agent runs</h2>
+<div class="card">
+  <table>
+    <tr><th>Agent</th><th>Status</th><th>Started</th></tr>
+    {% for r in agent_runs %}
+    <tr>
+      <td>{{ r.agent_name }}</td>
+      <td><span class="badge {{ r.status }}">{{ r.status }}</span>{% if r.error %} <span class="muted" style="font-size:12px;">{{ r.error[:120] }}</span>{% endif %}</td>
+      <td class="muted">{{ r.started_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

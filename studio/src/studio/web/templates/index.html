@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — The Turning Point{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+  <div>
+    <h1>Studio Dashboard</h1>
+    <div class="muted">AI-assisted documentary & video generation pipeline</div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a class="btn secondary" href="/settings">⚙️ Settings</a>
+    <a class="btn" href="/create">✨ Create Custom Video</a>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div class="muted" style="font-size:13px; font-weight:600;">CUSTOM VIDEO</div>
+        <div style="font-size:18px; font-weight:700; margin-top:4px;">Generate Any Topic</div>
+      </div>
+      <a class="btn" href="/create">Start ✨</a>
+    </div>
+    <div class="muted" style="margin-top:12px; font-size:13px;">
+      Input any historical event, true crime story, tech breakthrough, or custom subject.
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div class="muted" style="font-size:13px; font-weight:600;">CASE BACKLOG</div>
+        <div style="font-size:24px; font-weight:700; margin-top:2px;">{{ backlog_count }} <span class="muted" style="font-size:14px; font-weight:normal;">candidates</span></div>
+      </div>
+      <form action="/runs/start" method="post">
+        <button class="btn secondary" type="submit" {% if backlog_count == 0 %}disabled title="No candidates left"{% endif %}>Next in Queue ⚡</button>
+      </form>
+    </div>
+    <div class="muted" style="margin-top:10px; font-size:12px;">
+      Active backends: video=<code>{{ video_backend }}</code> voice=<code>{{ voice_backend }}</code> transcribe=<code>{{ transcribe_backend }}</code>
+    </div>
+  </div>
+</div>
+
+<h2>Active Runs</h2>
+{% if active_runs %}
+<div class="card">
+  <table>
+    <tr><th>Thread</th><th>Status</th><th>Video</th><th>Action</th></tr>
+    {% for h in active_runs %}
+    <tr>
+      <td><code>{{ h.thread_id[:8] }}</code></td>
+      <td><span class="badge {{ h.status }}">{{ h.status }}</span></td>
+      <td>{{ h.video_id or "Initializing..." }}</td>
+      <td><a class="btn secondary" style="padding:4px 10px; font-size:12px;" href="/runs/{{ h.thread_id }}">Open Progress ↗</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="card empty">No active runs in progress. Click "Create Custom Video" above to begin.</div>
+{% endif %}
+
+<h2>Recent Videos</h2>
+{% if videos %}
+<div class="card">
+  <table>
+    <tr><th>Topic / Case</th><th>Status</th><th>Created</th><th>Action</th></tr>
+    {% for v in videos %}
+    <tr>
+      <td style="font-weight:600;">{{ v.case_title or v.title or "—" }}</td>
+      <td><span class="badge {{ v.status }}">{{ v.status }}</span></td>
+      <td class="muted">{{ v.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td><a class="btn secondary" style="padding:4px 10px; font-size:12px;" href="/videos/{{ v.id }}">View Video ↗</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="card empty">No videos created yet.</div>
+{% endif %}
+{% endblock %}

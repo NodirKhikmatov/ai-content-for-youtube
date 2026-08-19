@@ -51,6 +51,24 @@ class QualityVerdict(BaseModel):
     issues: list[str] = Field(default_factory=list)
 
 
+def _fake_verdict() -> QualityVerdict:
+    """Local stand-in for Gemini: no API key, no network call, no video
+    upload. Fixed scores just above the auto-pass thresholds so a full
+    pipeline run clears Quality Review without needing a human decision —
+    for seeing the pipeline produce a finished video end to end without
+    GEMINI_API_KEY. Not a real quality judgment — see
+    QUALITY_REVIEW_BACKEND in .env.example.
+    """
+    dimensions: list[RubricDimension] = ["pacing", "factual_consistency", "av_sync", "brand_style"]
+    return QualityVerdict(
+        scores=[
+            RubricScore(dimension=d, score=0.96, notes="fake backend — not a real review")
+            for d in dimensions
+        ],
+        issues=[],
+    )
+
+
 PROMPT = (
     'Review this assembled documentary video for "The Turning Point" '
     "against four dimensions, each scored 0-1:\n"
@@ -71,13 +89,16 @@ def run(state: PipelineState) -> PipelineState:
         raise RuntimeError(
             "No assembled_video_path in state — Subtitle must run before Quality Review."
         )
-    if not settings.gemini_api_key:
+    if settings.quality_review_backend != "fake" and not settings.gemini_api_key:
         raise RuntimeError("GEMINI_API_KEY missing — see .env.example.")
 
     try:
-        verdict = cast(
-            QualityVerdict, review_video(assembled_video_path, PROMPT, QualityVerdict)
-        )
+        if settings.quality_review_backend == "fake":
+            verdict = _fake_verdict()
+        else:
+            verdict = cast(
+                QualityVerdict, review_video(assembled_video_path, PROMPT, QualityVerdict)
+            )
     except Exception as exc:
         db.record_agent_run(video_id, "quality_review", "failed", error=str(exc))
         raise
